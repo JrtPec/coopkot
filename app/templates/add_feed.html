@@ -1,0 +1,45 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Add new feed</h1>
+{% include 'flash.html' %}
+<div class="well">
+    <form class="form-horizontal" action="" method="post" name="edit">
+        {{form.hidden_tag()}}
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="xively_id">Xively ID:</label>
+            <div class="controls">
+                {{ form.xively_id(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.xively_id %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="api_key">API Key:</label>
+            <div class="controls">
+                {{ form.api_key(maxlength= 140, class = "span4") }}
+                {% for error in form.errors.api_key %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="info">Info about the feed:</label>
+            <div class="controls">
+                {{ form.info(cols = 64, rows = 4, class = "span4") }}
+                {% for error in form.errors.info %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <input class="btn btn-primary" type="submit" value="Add feed">
+            </div>
+        </div>
+    </form>
+</div>
+</form>
+{% endblock %}

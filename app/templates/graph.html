@@ -1,0 +1,103 @@
+<style>
+#chart {
+        position: relative;
+        left: 40px;
+}
+#y_axis {
+		position: absolute;
+        width: 40px;
+}
+#legend {
+	display: inline-block;
+	vertical-align: top;
+	margin: 0 0 0 10px;
+}
+</style>
+<div class="well well-large">
+	<div id="y_axis"></div>
+	<div id="chart"></div>
+	<div id="legend"></div>
+</div>
+
+<script type="text/javascript">
+function parseData(data){
+	var list = data.datapoints;
+	var graphData = [];
+	$.each(list,
+		function(i,item){
+			var date = moment(item.at);
+			var value = parseInt(item.value);
+			graphData.push({x:date.unix(),y:value});
+		});
+	return graphData;
+}
+
+function getMin(list){
+	min = list[0].y;
+	$.each(list,
+		function(i,item){
+			min = Math.min(min,item.y);
+		});
+	if(min!=0){
+		return (min-min/10);
+	}
+	else {
+		return (min-10);
+	}
+}
+
+function getMax(list){
+	max = list[0].y;
+	$.each(list,
+		function(i,item){
+			max = Math.max(max,item.y);
+		});
+	return (max+max/10);
+}
+
+var graphData = parseData({{dataset|safe}});
+
+var graph = new Rickshaw.Graph({
+	element: document.querySelector("#chart"),
+	renderer: 'line',
+	series: [{
+		data: graphData,
+		color: 'steelblue',
+		name: '{{datastream.xively_id}}'
+	}],
+	min: getMin(graphData),
+	max: getMax(graphData)
+});
+
+var x_axes = new Rickshaw.Graph.Axis.Time({graph: graph});
+
+var y_axis = new Rickshaw.Graph.Axis.Y({
+	graph: graph,
+	orientation: 'left',
+	tickFormat:Rickshaw.Fixtures.Number.formatKMBT,
+	element: document.getElementById('y_axis'),
+});
+
+var legend = new Rickshaw.Graph.Legend({
+	element: document.querySelector('#legend'),
+	graph:graph
+});
+
+var hoverDetail = new Rickshaw.Graph.HoverDetail({graph: graph});
+
+var shelving = new Rickshaw.Graph.Behavior.Series.Toggle({graph: graph, legend: legend});
+
+graph.render();
+
+
+
+
+
+
+
+
+//axes.render();
+
+
+
+</script>

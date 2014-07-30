@@ -1,0 +1,8 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Add new contract for user {{user.nickname}}</h1>
+{% include 'flash.html' %}
+{% include 'user_contract.html'%}
+{% endblock %}

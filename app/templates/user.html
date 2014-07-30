@@ -1,0 +1,21 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+{% include 'flash.html' %}
+<div class="well well-large">
+    <h1>{{user.nickname}}</h1>
+    {% if user.about_me %}<p>{{user.about_me}}</p>{% endif %}
+    {% if user.last_seen %}<p><em>Last seen on: {{user.last_seen}}</em></p>{% endif %}
+    {% if user.property.name %}<p>This user lives in: <a href="{{url_for('property',id=user.property.id)}}">{{user.property.name}}</a></p>{% endif %}
+    {% if user.id == g.user.id %}
+        <a href="{{url_for('edit')}}">Edit your profile</a>
+    {% endif %}
+    </p>
+</div>
+<div class="well well-large">
+	<h2>Contracts</h2>
+	{% include 'contract_table.html' %}
+    <p><a href="{{url_for('add_user_contract',id=g.user.id)}}">add a new contract for this user</a></p>
+</div>
+{% endblock %}

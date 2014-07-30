@@ -1,0 +1,37 @@
+<div class="well">
+    <form class="form-horizontal" action="" method="post" name="edit">
+        {{form.hidden_tag()}}
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="room">Room name:</label>
+            <div class="controls">
+                {{ form.room(class = "span4") }}
+                {% for error in form.errors.room %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="start_date">Start Date:</label>
+            <div class="controls">
+                {{ form.start_date(class = "span4") }}
+                {% for error in form.errors.start_date %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="room">End Date:</label>
+            <div class="controls">
+                {{ form.end_date(class = "span4") }}
+                {% for error in form.errors.end_date %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <input class="btn btn-primary" type="submit" value="Save">
+            </div>
+        </div>
+    </form>
+</div>

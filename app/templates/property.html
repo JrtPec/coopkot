@@ -1,0 +1,62 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+{% include 'flash.html' %}
+<div class="well well-large">
+    <h1>{{property.name}}</h1>
+    {% if property.info %}
+    	<p>{{property.info}}</p>
+    {% endif %}
+    <p><a href="{{url_for('edit_property', id = property.id)}}">Edit property info</a><p>
+</div>
+<div class="well well-large">
+	<h2>Prices</h2>
+	<p><b>Electricity: </b>€ {{prices.electricity/100}} per kWh</p>
+	<p><b>Heat: </b>€ {{prices.heat/100}} per kWh</p>
+	<p><b>Water: </b>€ {{prices.water/100}} per m<sup>3</sup></p>
+	<p>These prices are in effect since: {{prices.start_date.date()}}</p>
+	<p><a href="{{url_for('update_prices', id = prices.id)}}">Update prices</a></p>
+</div>
+<div class="well well-large">
+	<h2>Rooms</h2>
+	<table class="table table-hover">
+        {% for room in rooms %}
+        	<tr>
+	        	<td>
+	        			<p><a href="{{url_for('room',id=room.id)}}">{{room.name}}</a>: <em>{{room.info}}</em></p>
+	        	</td>
+    		</tr>
+        {% endfor %}
+        <tr>
+            <td>
+                <p><a href="{{url_for('add_room', id=property.id)}}">add room</a></p>
+            </td>
+        </tr>
+    </table>
+</div>
+<div class="well well-large">
+	<h2>Feeds</h2>
+	<table class="table table-hover">
+        {% for feed in feeds %}
+        	<tr>
+        		<td>
+        			<p><a href="{{url_for('feed',id=feed.id)}}">{{feed.xively_id}}</a>: <em>{{feed.info}}</em></p>
+        		</td>
+    		</tr>
+        {% endfor %}
+        <tr>
+            <td>
+                <p><a href="{{url_for('add_feed', id=property.id)}}">add feed</a></p>
+            </td>
+        </tr>
+    </table>
+</div>
+<div class="well well-large">
+    <h2>Users</h2>
+    {% include 'user_table.html'%}
+</div>
+<div class="well well-large">
+	<p><a href="{{url_for('delete_property', id=property.id)}}">delete property</a></p>
+</div> 
+{% endblock %}

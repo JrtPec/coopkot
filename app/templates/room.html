@@ -1,0 +1,43 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+{% include 'flash.html' %}
+<div class="well well-large">
+    <h1>Room: {{room.name}}</h1>
+    {% if room.info %}
+    	<p>{{room.info}}</p>
+    {% endif %}
+    <p>Property: <a href="{{url_for('property',id=room.property.id)}}">{{room.property.name}}</a></p>
+    <p><a href="{{url_for('edit_room', id = room.id)}}">Edit room info</a><p>
+</div>
+<div class="well well-large">
+	<h2>Contracts</h2>
+	{% include 'contract_table.html' %}
+    <p><a href="{{url_for('add_room_contract',id=room.id)}}">add a new contract for this room</a></p>
+</div>
+<div class="well well-large">
+    <h2>Connected datastreams</h2>
+    <table class="table table-hover">
+        <tr>
+            <th>Feed ID</th>
+            <th>Xively Id</th>
+            <th>Unit</th>
+        </tr>
+        {% for datastream in datastreams %}
+            <tr>
+                <td><p><a href="{{url_for('feed',id=datastream.feed.id)}}">{{datastream.feed.xively_id}}</a></p></td>
+                <td><p><a href="{{url_for('datastream',id=datastream.id)}}">{{datastream.xively_id}}</a></p</td>
+                <td><p>{{datastream.unit}}</p></td>
+                <td><p>
+                    <a href="{{url_for('edit_connection_room_datastream',id=datastream.get_connection(room.id).id)}}">edit connection</a>
+                </p></td>
+            </tr>
+        {% endfor %}
+    </table>
+    <p><a href="{{url_for('add_connection_room_datastream',id=room.id)}}">make a new connection between this room and a datastream</a></p>
+</div>
+<div class="well well-large">
+	<p><a href="{{url_for('delete_room', id=room.id)}}">delete room</a></p>
+</div> 
+{% endblock %}

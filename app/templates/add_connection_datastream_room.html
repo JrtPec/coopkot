@@ -1,0 +1,8 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Add new connection for datastream {{datastream.xively_id}}: <em>{{datastream.info}}</em></h1>
+{% include 'flash.html' %}
+{% include 'datastream_connection.html'%}
+{% endblock %}

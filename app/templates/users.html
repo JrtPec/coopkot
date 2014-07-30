@@ -1,0 +1,10 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+    {% include 'flash.html' %}
+    <div class="well well-large">
+        <h1>Users</h1>
+        {% include 'user_table.html' %}
+    </div>
+{% endblock %}

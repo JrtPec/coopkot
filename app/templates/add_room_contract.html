@@ -1,0 +1,8 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Add new contract for room {{room.name}}</h1>
+{% include 'flash.html' %}
+{% include 'room_contract.html'%}
+{% endblock %}

@@ -1,0 +1,11 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Edit connection for datastream {{datastream.xively_id}}: <em>{{datastream.info}}</em></h1>
+{% include 'flash.html' %}
+{% include 'datastream_connection.html'%}
+<div class="well well-large">
+	<p><a href="{{url_for('delete_room_datastream', id=connection.id)}}">delete connection</a></p>
+</div> 
+{% endblock %}
