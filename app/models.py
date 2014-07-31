@@ -19,6 +19,7 @@ class User(db.Model):
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime)
     rooms = db.relationship('Room',secondary='contract', lazy='dynamic')
+    facebook_id = db.Column(db.Integer)
 
     @staticmethod
     def make_unique_nickname(nickname):

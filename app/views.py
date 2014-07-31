@@ -1,6 +1,6 @@
 from flask import render_template, flash, redirect, session, url_for, request, g, abort
 from flask.ext.login import login_user, logout_user, current_user, login_required
-from app import app, db, lm, oid
+from app import app, db, lm, facebook
 from forms import LoginForm, EditForm, EditPropertyForm, AddPropertyForm, UpdatePricesForm, AddRoomForm, EditRoomForm, AddFeedForm, AddDatastreamForm, AddUserContractForm, AddRoomContractForm, AddConnectionRoomDatastreamForm, AddConnectionDatastreamRoomForm
 from models import User, ROLE_USER, ROLE_ADMIN, ROLE_LANDLORD, Property, Prices, Room, Feed, Datastream, Contract, Room_Datastream
 from datetime import datetime, date
@@ -13,6 +13,52 @@ def favicon():
 @lm.user_loader
 def load_user(id):
     return User.query.get(int(id))
+
+@facebook.tokengetter
+def get_facebook_token():
+    return session.get('facebook_token')
+
+def pop_login_session():
+    session.pop('logged_in', None)
+    session.pop('facebook_token', None)
+
+@app.route("/facebook_login")
+def facebook_login():
+    return facebook.authorize(callback=url_for('facebook_authorized',
+        next=request.args.get('next'), _external=True))
+
+@app.route("/facebook_authorized")
+@facebook.authorized_handler
+def facebook_authorized(resp):
+    next_url = request.args.get('next') or url_for('index')
+    if resp is None or 'access_token' not in resp:
+        flash('Invalid login. Please try again.')
+        return redirect(url_for('login'))
+
+    session['logged_in'] = True
+    session['facebook_token'] = (resp['access_token'], '')
+
+    data = facebook.get('/me').data
+    if 'id' in data and 'name' in data:
+        user_id = data['id']
+        user_name = data['name']
+
+    user = User.query.filter_by(facebook_id = user_id).first()
+
+    if user is None:
+        nickname = user_name
+        nickname = User.make_unique_nickname(nickname)
+        user = User(nickname = nickname, facebook_id = user_id, role = ROLE_USER)
+        db.session.add(user)
+        db.session.commit()
+
+    login_user(user)
+    return redirect(request.args.get('next') or url_for('index'))
+
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
 @app.before_request
 def before_request():
@@ -40,45 +86,12 @@ def index(page = 1):
         title = 'Dashboard',
         )
 
-@app.route('/login', methods = ['GET', 'POST'])
-@oid.loginhandler
+@app.route('/login')
 def login():
     if g.user is not None and g.user.is_authenticated():
         return redirect(url_for('index'))
-    form = LoginForm()
-    if form.validate_on_submit():
-        session['remember_me'] = form.remember_me.data
-        return oid.try_login(form.openid.data, ask_for = ['nickname', 'email'])
     return render_template('login.html', 
-        title = 'Sign In',
-        form = form,
-        providers = app.config['OPENID_PROVIDERS'])
-
-@oid.after_login
-def after_login(resp):
-    if resp.email is None or resp.email == "":
-        flash('Invalid login. Please try again.')
-        return redirect(url_for('login'))
-    user = User.query.filter_by(email = resp.email).first()
-    if user is None:
-        nickname = resp.nickname
-        if nickname is None or nickname == "":
-            nickname = resp.email.split('@')[0]
-        nickname = User.make_unique_nickname(nickname)
-        user = User(nickname = nickname, email = resp.email, role = ROLE_USER)
-        db.session.add(user)
-        db.session.commit()
-    remember_me = False
-    if 'remember_me' in session:
-        remember_me = session['remember_me']
-        session.pop('remember_me', None)
-    login_user(user, remember = remember_me)
-    return redirect(request.args.get('next') or url_for('index'))
-
-@app.route('/logout')
-def logout():
-    logout_user()
-    return redirect(url_for('index'))
+        title = 'Sign In',)
     
 @app.route('/user/<nickname>')
 @login_required
