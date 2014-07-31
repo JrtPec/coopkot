@@ -7,7 +7,10 @@ SECRET_KEY = 'you-will-never-guess'
 FACEBOOK_APP_ID = '251477738393481'
 FACEBOOK_APP_SECRET = '723ce8fda1034eaa465489362cf52b31'
     
-SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'app.db')
+if os.environ.get('DATABASE_URL') is None:
+	SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'app.db')
+else:
+	SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 
 # email server
