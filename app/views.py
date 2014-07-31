@@ -39,8 +39,7 @@ def facebook_authorized(resp):
         user_id = data['id']
         user_name = data['name']
 
-    #user = User.query.filter_by(facebook_id = user_id).first()
-    user = User.query.first()
+    user = User.query.filter_by(facebook_id = user_id).first()
 
     if user is None:
         nickname = user_name
