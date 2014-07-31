@@ -1,5 +1,5 @@
 import os
-import settings
+from settings import PROJECT_PATH
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 CSRF_ENABLED = True
