@@ -6,6 +6,10 @@ from models import User, ROLE_USER, ROLE_ADMIN, ROLE_LANDLORD, Property, Prices,
 from datetime import datetime, date
 from xively import get_datastreams, get_dataset
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path,'static'),'favicon.ico')
+
 @lm.user_loader
 def load_user(id):
     return User.query.get(int(id))
