@@ -18,10 +18,6 @@ def load_user(id):
 def get_facebook_token():
     return session.get('facebook_token')
 
-def pop_login_session():
-    session.pop('logged_in', None)
-    session.pop('facebook_token', None)
-
 @app.route("/facebook_login")
 def facebook_login():
     return facebook.authorize(callback=url_for('facebook_authorized',
@@ -44,13 +40,14 @@ def facebook_authorized(resp):
         user_name = data['name']
 
     #user = User.query.filter_by(facebook_id = user_id).first()
+    user = User.query.first()
 
     if user is None:
         nickname = user_name
         nickname = User.make_unique_nickname(nickname)
         user = User(nickname = nickname, facebook_id = user_id, role = ROLE_USER)
-        #db.session.add(user)
-        #db.session.commit()
+        db.session.add(user)
+        db.session.commit()
 
     login_user(user)
     return redirect(request.args.get('next') or url_for('index'))
