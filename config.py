@@ -1,6 +1,5 @@
 import os
-from settings import PROJECT_PATH, STATICFILES_DIRS
-basedir = os.path.abspath(os.path.dirname(__file__))
+basedir = os.path.dirname(os.path.dirname(__file__))
 
 CSRF_ENABLED = True
 SECRET_KEY = 'you-will-never-guess'
@@ -12,10 +11,8 @@ if os.environ.get('DATABASE_URL') is None:
 	SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'app.db') + '?check_same_thread=False'
 else:
 	SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
-if PROJECT_PATH is None:
-	SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
-else:
-	SQLALCHEMY_MIGRATE_REPO = os.path.join(STATICFILES_DIRS, 'db_repository')
+
+SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 SQLALCHEMY_RECORD_QUERIES = True
 
 # email server
