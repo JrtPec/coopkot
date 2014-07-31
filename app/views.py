@@ -125,10 +125,15 @@ def edit():
 @app.route('/users')
 
 def users():
+    print "Querying all users"
     users = User.query.all()
+    print "Creating new user"
     user = User(nickname = 'Jan', email='jan@jan.be')
+    print "Adding user to session"
     db.session.add(user)
+    print "Committing.."
     db.session.commit()
+    print "Rendering"
     return render_template('users.html',
         users = users)
 
