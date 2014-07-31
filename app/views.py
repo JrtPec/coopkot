@@ -43,14 +43,14 @@ def facebook_authorized(resp):
         user_id = data['id']
         user_name = data['name']
 
-    user = User.query.filter_by(facebook_id = user_id).first()
+    #user = User.query.filter_by(facebook_id = user_id).first()
 
     if user is None:
         nickname = user_name
         nickname = User.make_unique_nickname(nickname)
         user = User(nickname = nickname, facebook_id = user_id, role = ROLE_USER)
-        db.session.add(user)
-        db.session.commit()
+        #db.session.add(user)
+        #db.session.commit()
 
     login_user(user)
     return redirect(request.args.get('next') or url_for('index'))
