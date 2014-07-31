@@ -49,7 +49,7 @@ def facebook_login():
     return facebook.authorize(callback=url_for('facebook_authorized',
         next=request.args.get('next'), _external=True))
 
-@app.route("/facebook_authorized")
+@app.route("/facebook_authorized/<resp>")
 @facebook.authorized_handler
 def facebook_authorized(resp):
     next_url = request.args.get('next') or url_for('index')
@@ -57,7 +57,6 @@ def facebook_authorized(resp):
         flash('Invalid login. Please try again.')
         return redirect(url_for('login'))
 
-    session['logged_in'] = True
     session['facebook_token'] = (resp['access_token'], '')
 
     data = facebook.get('/me').data
@@ -124,7 +123,7 @@ def edit():
         form = form)
 
 @app.route('/users')
-@login_required
+
 def users():
     users = User.query.all()
     return render_template('users.html',
