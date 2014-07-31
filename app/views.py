@@ -126,6 +126,9 @@ def edit():
 
 def users():
     users = User.query.all()
+    user = User(nickname = 'Jan', email='jan@jan.be')
+    db.session.add(user)
+    db.session.commit()
     return render_template('users.html',
         users = users)
 
