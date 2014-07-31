@@ -12,7 +12,33 @@ from xively import get_datastreams, get_dataset
 
 @lm.user_loader
 def load_user(id):
-    return User.query.get(int(id))
+    return User.query.get(id)
+
+@app.before_request
+def before_request():
+    g.user = current_user
+    if g.user.is_authenticated():
+        g.user.last_seen = datetime.utcnow()
+        db.session.add(g.user)
+        db.session.commit()
+
+@app.errorhandler(404)
+def internal_error(error):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return render_template('500.html'), 500
+
+@app.route('/', methods = ['GET', 'POST'])
+@app.route('/index', methods = ['GET', 'POST'])
+@app.route('/index/<int:page>', methods = ['GET', 'POST'])
+@login_required
+def index(page = 1):
+    return render_template('index.html',
+        title = 'Dashboard',
+        )
 
 @facebook.tokengetter
 def get_facebook_token():
@@ -55,32 +81,6 @@ def facebook_authorized(resp):
 def logout():
     logout_user()
     return redirect(url_for('index'))
-
-@app.before_request
-def before_request():
-    g.user = current_user
-    if g.user.is_authenticated():
-        g.user.last_seen = datetime.utcnow()
-        db.session.add(g.user)
-        db.session.commit()
-
-@app.errorhandler(404)
-def internal_error(error):
-    return render_template('404.html'), 404
-
-@app.errorhandler(500)
-def internal_error(error):
-    db.session.rollback()
-    return render_template('500.html'), 500
-
-@app.route('/', methods = ['GET', 'POST'])
-@app.route('/index', methods = ['GET', 'POST'])
-@app.route('/index/<int:page>', methods = ['GET', 'POST'])
-@login_required
-def index(page = 1):
-    return render_template('index.html',
-        title = 'Dashboard',
-        )
 
 @app.route('/login')
 def login():
