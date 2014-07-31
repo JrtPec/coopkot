@@ -15,7 +15,7 @@ else:
 if PROJECT_PATH is None:
 	SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 else:
-	SQLALCHEMY_MIGRATE_REPO = PROJECT_PATH + 'db_repository'
+	SQLALCHEMY_MIGRATE_REPO = '/db_repository'
 SQLALCHEMY_RECORD_QUERIES = True
 
 # email server
