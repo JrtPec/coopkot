@@ -65,6 +65,13 @@ class UpdatePricesForm(Form):
     heat = DecimalField('heat', validators = [Required()], places = 2)
     water = DecimalField('water', validators = [Required()], places = 2)
 
+class EditPricesForm(Form):
+    electricity = DecimalField('electricity', validators = [Required()], places = 2)
+    heat = DecimalField('heat', validators = [Required()], places = 2)
+    water = DecimalField('water', validators = [Required()], places = 2)
+    start_date = DateField('start_date', validators=[Required()])
+    end_date = DateField('end_date')
+
 class AddRoomForm(Form):
     name = TextField('name', validators = [Required()])
     info = TextAreaField('info', validators = [Length(min = 0, max = 140)])

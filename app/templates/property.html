@@ -16,7 +16,7 @@
 	<p><b>Heat: </b>€ {{prices.heat/100}} per kWh</p>
 	<p><b>Water: </b>€ {{prices.water/100}} per m<sup>3</sup></p>
 	<p>These prices are in effect since: {{prices.start_date.date()}}</p>
-	<p><a href="{{url_for('update_prices', id = prices.id)}}">Update prices</a></p>
+	<p><a href="{{url_for('update_prices', id = prices.id)}}">Update prices</a> | <a href="{{url_for('prices', id = property.id)}}">View history of prices</a></p>
 </div>
 <div class="well well-large">
 	<h2>Rooms</h2>

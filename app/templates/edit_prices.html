@@ -1,0 +1,63 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Edit historical price entry</h1>
+{% include 'flash.html' %}
+<div class="well">
+    <form class="form-horizontal" action="" method="post" name="edit">
+        {{form.hidden_tag()}}
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="start_date">Start Date:</label>
+            <div class="controls">
+                {{ form.start_date(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.start_date %}
+                    <span class="help-inline"> [{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="end_date">End Date:</label>
+            <div class="controls">
+                {{ form.end_date(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.end_date %}
+                    <span class="help-inline"> [{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="electricity">Electricity price:</label>
+            <div class="controls">
+                € {{ form.electricity(maxlength = 20, class = "span1") }} per kWh
+                {% for error in form.errors.electricity %}
+                    <span class="help-inline"> [{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="heat">Heat price:</label>
+            <div class="controls">
+                € {{ form.heat(maxlength = 20, class = "span1") }} per kWh
+                {% for error in form.errors.heat %}
+                    <span class="help-inline"> [{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="water">Water price:</label>
+            <div class="controls">
+                € {{ form.water(maxlength = 20, class = "span1") }} per m<sup>3</sup>
+                {% for error in form.errors.water %}
+                    <span class="help-inline"> [{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <input class="btn btn-primary" type="submit" value="Update prices">
+            </div>
+        </div>
+    </form>
+</div>
+</form>
+{% endblock %}

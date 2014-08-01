@@ -61,6 +61,9 @@ class Property(db.Model):
     def get_current_prices(self):
         return Prices.query.join(Property, (Property.id == Prices.property_id)).filter(Property.id == self.id).order_by(Prices.start_date.desc()).first()
 
+    def get_prices(self):
+        return Prices.query.filter(Prices.property_id == self.id).order_by(Prices.start_date.desc())
+
     def get_contracts(self):
         return Contract.query.join(Room).filter(Room.property_id == self.id)
 

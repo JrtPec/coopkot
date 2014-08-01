@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, session, url_for, request, g, abort
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db, lm, facebook
-from forms import LoginForm, EditForm, EditPropertyForm, AddPropertyForm, UpdatePricesForm, AddRoomForm, EditRoomForm, AddFeedForm, AddDatastreamForm, AddUserContractForm, AddRoomContractForm, AddConnectionRoomDatastreamForm, AddConnectionDatastreamRoomForm
+from forms import LoginForm, EditForm, EditPropertyForm, AddPropertyForm, UpdatePricesForm, EditPricesForm, AddRoomForm, EditRoomForm, AddFeedForm, AddDatastreamForm, AddUserContractForm, AddRoomContractForm, AddConnectionRoomDatastreamForm, AddConnectionDatastreamRoomForm
 from models import User, ROLE_USER, ROLE_ADMIN, ROLE_LANDLORD, Property, Prices, Room, Feed, Datastream, Contract, Room_Datastream
 from datetime import datetime, date
 from xively import get_datastreams, get_dataset
@@ -247,6 +247,46 @@ def update_prices(id):
         form.water.data = float(prices.water)/100
     return render_template('update_prices.html',
         propertyName = prices.property.name,
+        form = form)
+
+@app.route('/prices/<id>')
+@login_required
+def prices(id):
+    p = Property.query.get(id)
+    if p == None:
+        flash('Property not found')
+        abort(404)
+    prices = p.get_prices()
+    return render_template('prices.html',
+        propertyName = p.name,
+        prices = prices)
+
+@app.route('/edit_prices/<id>', methods=['GET', 'POST'])
+@login_required
+def edit_prices(id):
+    p = Prices.query.get(id)
+    if p == None:
+        flash('Prices not found')
+        abort(404)
+    form = EditPricesForm()
+    if form.validate_on_submit():
+        p.electricity = int(form.electricity.data*100)
+        p.heat = int(form.heat.data*100)
+        p.water = int(form.water.data*100)
+        p.start_date = form.start_date.data
+        p.end_date = form.end_date.data
+        db.session.add(p)
+        db.session.commit()
+        flash("Prices updated!")
+        return redirect(url_for('prices',id=p.property_id))
+    elif request.method != 'POST':
+        form.electricity.data = float(p.electricity)/100
+        form.heat.data = float(p.heat)/100
+        form.water.data = float(p.water)/100
+        form.start_date.data = p.start_date
+        form.end_date.data = p.end_date
+    return render_template('edit_prices.html',
+        prices = p,
         form = form)
 
 @app.route('/add_room/<id>', methods = ['GET','POST'])

@@ -1,0 +1,32 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+    {% include 'flash.html' %}
+    <div class="well well-large">
+        <h1>History of prices for {{propertyName}}</h1>
+            <table class="table table-hover">
+	            <tr>
+	                <th>Start Date</th>
+	                <th>End Date</th>
+	                <th>Electricity (€/kWh)</th>
+	                <th>Heat (€/kWh)</th>
+	                <th>Water (€/m<sup>3</sup>)</th>
+	            </tr>
+	            {% for entry in prices %}
+	                <tr>
+	                    <td><p>{{entry.start_date.date()}}</p></td>
+	                    {% if entry.end_date %}
+	                    	<td><p>{{entry.end_date.date()}}</p></td>
+	                    {% else %}
+	                    	<td><p>current</p></td>
+	                    {% endif %}
+	                    <td><p>{{entry.electricity}}</p></td>
+	                    <td><p>{{entry.heat}}</p></td>
+	                    <td><p>{{entry.water}}</p></td>
+	                    <td><p><a href="{{url_for('edit_prices',id=entry.id)}}">edit</a></p></td>
+	                </tr>
+	            {% endfor %}
+	        </table>
+    </div>
+{% endblock %}
