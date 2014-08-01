@@ -30,6 +30,7 @@ MAIL_PASSWORD = 'G1snrfpfilAE'
 # administrator list
 ADMINS = ['janpecinovsky+admin@gmail.com']
 
+ADMIN_NAMES = ['Jan Pecinovsky']
 # pagination
 POSTS_PER_PAGE = 50
 MAX_SEARCH_RESULTS = 50

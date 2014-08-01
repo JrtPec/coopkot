@@ -16,6 +16,9 @@
 <div class="well well-large">
 	<h2>Contracts</h2>
 	{% include 'contract_table.html' %}
-    <p><a href="{{url_for('add_user_contract',id=g.user.id)}}">add a new contract for this user</a></p>
+    <p><a href="{{url_for('add_user_contract',id=user.id)}}">add a new contract for this user</a></p>
+</div>
+<div class="well well-large">
+    <p><a href="{{url_for('delete_user',id=user.id)}}">delete user</a></p>
 </div>
 {% endblock %}

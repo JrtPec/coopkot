@@ -5,6 +5,7 @@ from forms import LoginForm, EditForm, EditPropertyForm, AddPropertyForm, Update
 from models import User, ROLE_USER, ROLE_ADMIN, ROLE_LANDLORD, Property, Prices, Room, Feed, Datastream, Contract, Room_Datastream
 from datetime import datetime, date
 from xively import get_datastreams, get_dataset
+from config import ADMIN_NAMES
 
 #@app.route('/favicon.ico')
 #def favicon():
@@ -63,13 +64,19 @@ def facebook_authorized(resp):
     if 'id' in data and 'name' in data:
         user_id = data['id']
         user_name = data['name']
+    if 'email' in data:
+        user_email = data['email']
 
     user = User.query.filter_by(facebook_id = user_id).first()
 
     if user is None:
         nickname = user_name
         nickname = User.make_unique_nickname(nickname)
-        user = User(nickname = nickname, facebook_id = user_id, role = ROLE_USER)
+        if user_name in ADMIN_NAMES:
+            role = ROLE_ADMIN
+        else:
+            role = ROLE_USER
+        user = User(nickname = nickname, email = user_email,facebook_id = user_id, role = role)
         db.session.add(user)
         db.session.commit()
 
@@ -121,6 +128,18 @@ def edit():
         form.about_me.data = g.user.about_me
     return render_template('edit.html',
         form = form)
+
+@app.route('/delete_user/<id>')
+@login_required
+def delete_user(id):
+    user = User.query.get(id)
+    if user == None:
+        flash('User not found')
+        abort(404)
+    db.session.delete(user)
+    db.session.commit()
+    flash('User deleted')
+    return redirect(url_for('users'))
 
 @app.route('/users')
 @login_required
