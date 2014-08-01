@@ -49,7 +49,7 @@ def facebook_login():
     return facebook.authorize(callback=url_for('facebook_authorized',
         next=request.args.get('next'), _external=True))
 
-@app.route("/facebook_authorized/<resp>")
+@app.route("/facebook_authorized")
 @facebook.authorized_handler
 def facebook_authorized(resp):
     next_url = request.args.get('next') or url_for('index')
@@ -123,17 +123,10 @@ def edit():
         form = form)
 
 @app.route('/users')
-
+@login_required
 def users():
     print "Querying all users"
     users = User.query.all()
-    print "Creating new user"
-    user = User(nickname = 'Jan', email='jan@jan.be')
-    print "Adding user to session"
-    db.session.add(user)
-    print "Committing.."
-    db.session.commit()
-    print "Rendering"
     return render_template('users.html',
         users = users)
 

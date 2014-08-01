@@ -15,7 +15,7 @@ class User(db.Model):
     nickname = db.Column(db.String(64), unique = True)
     email = db.Column(db.String(120), index = True, unique = True)
     role = db.Column(db.SmallInteger, default = ROLE_USER)
-    property_id = db.Column(db.Integer, db.ForeignKey('property.id'), default=-1)
+    property_id = db.Column(db.Integer, db.ForeignKey('property.id'))
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime)
     rooms = db.relationship('Room',secondary='contract', lazy='dynamic')
