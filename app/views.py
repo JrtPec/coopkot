@@ -469,13 +469,23 @@ def datastream(id):
     if datastream == None:
         flash('Datastream not found.')
         abort(404)
-    dataset = get_dataset(datastream)
-    print dataset
     return render_template('datastream.html',
         datastream = datastream,
         rooms = datastream.rooms,
-        dataset = get_dataset(datastream)
         )
+
+@app.route('/_get_graph_data', methods=['GET','POST'])
+def get_graph_data():
+    if request.method == 'GET':
+        datastream_id = 27
+    else:
+        datastream_id = request.form.get('datastream_id')
+    datastream = Datastream.query.get(int(datastream_id))
+    if datastream == None:
+        flash ('Datastream not found')
+        abort (404)
+    dataset = get_dataset(datastream)
+    return dataset
 
 @app.route('/edit_datastream/<id>', methods = ['GET','POST'])
 @login_required

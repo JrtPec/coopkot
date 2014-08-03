@@ -20,8 +20,33 @@
 </div>
 
 <script type="text/javascript">
+if(window.attachEvent){
+	window.attachEvent('onload',createGraph);
+} else {
+	if(window.onload) {
+		var curronload = window.onload;
+		var newonload = function() {
+			curronload();
+			createGraph();
+		};
+		window.onload = newonload;
+	} else {
+		window.onload = createGraph;
+	}
+}
+
+function createGraph(){
+	$.post("{{url_for('get_graph_data')}}",
+		{ datastream_id: {{datastream.id}} },
+		function(data) {
+			drawGraph(data);
+		});
+	return false;
+}
+
 function parseData(data){
-	var list = data.datapoints;
+	var output = $.parseJSON(data);
+	var list = output.datapoints;
 	var graphData = [];
 	$.each(list,
 		function(i,item){
@@ -55,49 +80,40 @@ function getMax(list){
 	return (max+max/10);
 }
 
-var graphData = parseData({{dataset|safe}});
+function drawGraph(dataset){
+	var graphData = parseData(dataset);
 
-var graph = new Rickshaw.Graph({
-	element: document.querySelector("#chart"),
-	renderer: 'line',
-	series: [{
-		data: graphData,
-		color: 'steelblue',
-		name: '{{datastream.xively_id}}'
-	}],
-	min: getMin(graphData),
-	max: getMax(graphData)
-});
+	var graph = new Rickshaw.Graph({
+		element: document.querySelector("#chart"),
+		renderer: 'line',
+		series: [{
+			data: graphData,
+			color: 'steelblue',
+			name: '{{datastream.xively_id}}'
+		}],
+		min: getMin(graphData),
+		max: getMax(graphData)
+	});
 
-var x_axes = new Rickshaw.Graph.Axis.Time({graph: graph});
+	var x_axes = new Rickshaw.Graph.Axis.Time({graph: graph});
 
-var y_axis = new Rickshaw.Graph.Axis.Y({
-	graph: graph,
-	orientation: 'left',
-	tickFormat:Rickshaw.Fixtures.Number.formatKMBT,
-	element: document.getElementById('y_axis'),
-});
+	var y_axis = new Rickshaw.Graph.Axis.Y({
+		graph: graph,
+		orientation: 'left',
+		tickFormat:Rickshaw.Fixtures.Number.formatKMBT,
+		element: document.getElementById('y_axis'),
+	});
 
-var legend = new Rickshaw.Graph.Legend({
-	element: document.querySelector('#legend'),
-	graph:graph
-});
+	var legend = new Rickshaw.Graph.Legend({
+		element: document.querySelector('#legend'),
+		graph:graph
+	});
 
-var hoverDetail = new Rickshaw.Graph.HoverDetail({graph: graph});
+	var hoverDetail = new Rickshaw.Graph.HoverDetail({graph: graph});
 
-var shelving = new Rickshaw.Graph.Behavior.Series.Toggle({graph: graph, legend: legend});
+	var shelving = new Rickshaw.Graph.Behavior.Series.Toggle({graph: graph, legend: legend});
 
-graph.render();
-
-
-
-
-
-
-
-
-//axes.render();
-
-
+	graph.render();
+}
 
 </script>
