@@ -34,6 +34,15 @@
                 {% endfor %}
             </div>
         </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="type">Type of datastream:</label>
+            <div class="controls">
+                {{ form.type() }}
+                {% for error in form.errors.type %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
         <div class="control-group">
             <div class="controls">
                 <input class="btn btn-primary" type="submit" value="Add datastream">

@@ -1,7 +1,7 @@
 from flask.ext.wtf import Form
 from wtforms import TextField, BooleanField, TextAreaField, HiddenField, DecimalField, SelectField, DateField
 from wtforms.validators import DataRequired as Required
-from wtforms.validators import Length, optional
+from wtforms.validators import Length, optional, NumberRange
 from models import User, Property, Prices, Room
 
 class LoginForm(Form):
@@ -89,6 +89,7 @@ class AddDatastreamForm(Form):
     xively_id = TextField('xively_id', validators = [Required()])
     unit = TextField('unit', validators = [Required()])
     info = TextAreaField('info', validators = [Length(min = 0, max = 140)])
+    type = SelectField('type', coerce=int, validators=[NumberRange(min=0, message='Select a valid type')])
 
 class AddUserContractForm(Form):
     room = SelectField('room', coerce=int, validators=[Required()])

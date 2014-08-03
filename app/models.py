@@ -8,6 +8,7 @@ ROLE_ADMIN = 2
 TYPE_ELECTRICITY = 0
 TYPE_HEAT = 1
 TYPE_WATER = 2
+TYPE_ELECTRICITY_INST = 3
 
 class User(db.Model):
     __tablename__ = 'user'

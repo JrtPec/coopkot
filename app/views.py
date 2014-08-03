@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db, lm, facebook
 from forms import LoginForm, EditForm, EditPropertyForm, AddPropertyForm, UpdatePricesForm, EditPricesForm, AddRoomForm, EditRoomForm, AddFeedForm, AddDatastreamForm, AddUserContractForm, AddRoomContractForm, AddConnectionRoomDatastreamForm, AddConnectionDatastreamRoomForm
-from models import User, ROLE_USER, ROLE_ADMIN, ROLE_LANDLORD, Property, Prices, Room, Feed, Datastream, Contract, Room_Datastream
+from models import User, ROLE_USER, ROLE_ADMIN, ROLE_LANDLORD, TYPE_ELECTRICITY, TYPE_ELECTRICITY_INST, TYPE_HEAT, TYPE_WATER, Property, Prices, Room, Feed, Datastream, Contract, Room_Datastream
 from datetime import datetime, date
 from xively import get_datastreams, get_dataset
 from config import ADMIN_NAMES
@@ -453,8 +453,9 @@ def add_datastream(id):
         flash('Feed not found.')
         abort(404)
     form = AddDatastreamForm()
+    form.type.choices = [(-1,'Select...'),(TYPE_ELECTRICITY_INST, 'Electricity Power'),(TYPE_ELECTRICITY, 'Electricity Cumulative'),(TYPE_HEAT, 'Heat'),(TYPE_WATER, 'Water')]
     if form.validate_on_submit():
-        newDatastream = Datastream(xively_id=form.xively_id.data,feed=feed,info=form.info.data,unit=form.unit.data)
+        newDatastream = Datastream(xively_id=form.xively_id.data,feed=feed,info=form.info.data,unit=form.unit.data,type=form.type.data)
         db.session.add(newDatastream)
         db.session.commit()
         flash('New datastream "'+newDatastream.xively_id+'" was added to '+newDatastream.feed.xively_id+'.')
@@ -495,10 +496,12 @@ def edit_datastream(id):
         flash('Datastream not found.')
         abort(404)
     form = AddDatastreamForm()
+    form.type.choices = [(-1,'Select...'),(TYPE_ELECTRICITY_INST, 'Electricity Power'),(TYPE_ELECTRICITY, 'Electricity Cumulative'),(TYPE_HEAT, 'Heat'),(TYPE_WATER, 'Water')]
     if form.validate_on_submit():
         datastream.xively_id = form.xively_id.data
         datastream.unit = form.unit.data
         datastream.info = form.info.data
+        datastream.type = form.type.data
         db.session.add(datastream)
         db.session.commit()
         flash('Your changes have been saved.')
