@@ -144,7 +144,6 @@ def delete_user(id):
 @app.route('/users')
 @login_required
 def users():
-    print "Querying all users"
     users = User.query.all()
     return render_template('users.html',
         users = users)
@@ -475,18 +474,20 @@ def datastream(id):
         rooms = datastream.rooms,
         )
 
-@app.route('/_get_graph_data', methods=['GET','POST'])
+@app.route('/_get_graph_data', methods=['POST'])
 def get_graph_data():
-    if request.method == 'GET':
-        datastream_id = 27
-    else:
-        datastream_id = request.form.get('datastream_id')
+    datastream_id = request.form.get('datastream_id')
+    zoom_level = request.form.get('zoom_level')
+    timeStamp = request.form.get('timeStamp')
+    if zoom_level == None:
+        zoom_level = 7
+    zoom_level = int(zoom_level)
     datastream = Datastream.query.get(int(datastream_id))
     if datastream == None:
         flash ('Datastream not found')
         abort (404)
-    dataset = get_dataset(datastream)
-    return dataset
+    dataset = get_dataset(datastream=datastream,zoom_level=zoom_level,timeStamp=timeStamp)
+    return (dataset)
 
 @app.route('/edit_datastream/<id>', methods = ['GET','POST'])
 @login_required

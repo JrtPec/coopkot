@@ -1,22 +1,29 @@
 <style>
-#chart {
+
+#chartcontainer {
         position: relative;
-        left: 40px;
+        left: 5px;
+        right: 5px;
 }
-#y_axis {
-		position: absolute;
-        width: 40px;
+
+#buttons {
+	text-align: center;
+	margin-top: 415px;
 }
-#legend {
-	display: inline-block;
-	vertical-align: top;
-	margin: 0 0 0 10px;
-}
+
 </style>
+<div class="well well-large" style="height:450px">
+	<div id="chartcontainer"></div>
+	<div id="buttons">
+		<input type=submit class="btn btn-primary" id="backwards" value="<<">
+		<input type=submit class="btn btn-primary" id="zoom_out" value="-">
+		<input type=submit class="btn btn-primary" id="zoom_in" value="+">
+		<input type=submit class="btn btn-primary" id="forwards" value=">>">
+	</div>
+</div>
+
 <div class="well well-large">
-	<div id="y_axis"></div>
-	<div id="chart"></div>
-	<div id="legend"></div>
+	<h2 id="interval"></h2><em id="start"></em> - <em id="end"></em>
 </div>
 
 <script type="text/javascript">
@@ -35,85 +42,198 @@ if(window.attachEvent){
 	}
 }
 
+var zoom_level = 7;
+var graphType = "line";
+var graphData = [];
+var timeStamp;
+
+var	chart = new CanvasJS.Chart("chartcontainer",{
+	zoomEnabled: true,
+	title :{
+		text: "Datastream: {{datastream.name}}"
+	},
+	axisY: {
+		title: "{{datastream.unit}}"
+	},
+	data: [{
+		color: 'steelblue',
+		type: graphType,
+		xValueType: "dateTime",
+		showInLegend: true,
+		dataPoints : graphData,
+		name: "{{datastream.id}}"
+	}],
+	legend: {
+		cursor:"pointer",
+		itemclick : function(e) {
+			if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+				e.dataSeries.visible = false;
+			}
+			else {
+				e.dataSeries.visible = true;
+			}
+			chart.render();
+		}
+	},
+	creditText: "",
+	animationEnabled: true
+});
+
 function createGraph(){
 	$.post("{{url_for('get_graph_data')}}",
 		{ datastream_id: {{datastream.id}} },
 		function(data) {
-			drawGraph(data);
+			graphData.length = 0;
+			Array.prototype.push.apply(graphData,parseData(data));
+			chart.render();
+			updateInfo();
+		});
+	return false;
+}
+
+function updateGraph(){
+	checkLimits();
+	checkGraphType();
+	$.post("{{url_for('get_graph_data')}}",
+		{ datastream_id: {{datastream.id}},
+		zoom_level : zoom_level,
+		timeStamp : timeStamp
+		 },
+		function(data) {
+			graphData.length = 0;
+			Array.prototype.push.apply(graphData,parseData(data));
+			chart.options.data[0].type = graphType;
+			chart.render();
+			updateInfo();
 		});
 	return false;
 }
 
 function parseData(data){
 	var output = $.parseJSON(data);
+	zoom_level = output.zoom_level;
 	var list = output.datapoints;
-	var graphData = [];
+	console.log(output);
+	timeStamp = list[list.length-1].at;
+	var decoded_data = [];
 	$.each(list,
 		function(i,item){
 			var date = moment(item.at);
 			var value = parseInt(item.value);
-			graphData.push({x:date.unix(),y:value});
+			decoded_data.push({x:date.unix()*1000,y:value});
 		});
-	return graphData;
+	return decoded_data;
 }
 
-function getMin(list){
-	min = list[0].y;
-	$.each(list,
-		function(i,item){
-			min = Math.min(min,item.y);
+$(function() {
+		$('#zoom_in').bind('click', function(){
+			if(zoom_level<13){
+				zoom_level++;
+				updateGraph();
+			}
+			return false;
 		});
-	if(min!=0){
-		return (min-min/10);
+		return false;
+	});
+$(function() {
+	$('#zoom_out').bind('click', function(){
+		if(zoom_level>3){
+			zoom_level--;
+			updateGraph();
+		}
+
+		return false;
+	});
+	return false;
+});
+$(function() {
+	$('#backwards').bind('click', function(){
+		backwards();
+	});
+	return false;
+});
+$(function() {
+	$('#forwards').bind('click', function(){
+		forwards();
+	});
+	return false;
+});
+
+function getTimeInterval(){
+	var start = new Date(graphData[0].x);
+	var end = new Date(graphData[graphData.length-1].x);
+	var interval = end - start;
+	return interval;
+}
+
+function backwards(){
+	var interval = getTimeInterval();
+	var end = new Date(timeStamp);
+	end = Date.parse(end);
+	end = end - interval;
+	end = new Date(end);
+	timeStamp = end.toISOString();
+	updateGraph();
+}
+
+function forwards(){
+	var interval = getTimeInterval();
+	var end = new Date(timeStamp);
+	end = Date.parse(end);
+	end = end + interval;
+
+	end = new Date(end);
+	timeStamp = end.toISOString();
+	updateGraph();
+}
+
+function checkLimits(){
+	var end = new Date(timeStamp);
+	end = Date.parse(end);
+	if (end > Date.now()){
+		end = Date.now();
+	}
+	end = new Date(end);
+	timeStamp = end.toISOString();
+}
+
+function checkGraphType(){
+	if (zoom_level>6){
+		graphType = "line";
 	}
 	else {
-		return (min-10);
+		graphType = "stackedColumn";
 	}
 }
 
-function getMax(list){
-	max = list[0].y;
-	$.each(list,
-		function(i,item){
-			max = Math.max(max,item.y);
-		});
-	return (max+max/10);
-}
+function updateInfo(){
+	var start = new Date(graphData[0].x);
+	var end = new Date(graphData[graphData.length-1].x);
+	var interval = end - start;
+	if(interval/(1000*60)<60){
+		interval = Math.round(interval/(1000*60)) + " minutes";
+	}
+	else if(interval/(1000*60*60)<48){
+		interval = Math.round(interval/(1000*60*60)) + " hours";
+	}
+	else if(interval/(1000*60*60*24)<14){
+		interval = Math.round(interval/(1000*60*60*24)) + " days";
+	}
+	else if(interval/(1000*60*60*24*7)<8){
+		interval = Math.round(interval/(1000*60*60*24*7)) + " weeks";
+	}
+	else if(interval/(1000*60*60*24*30)<24){
+		interval = Math.round(interval/(1000*60*60*24*30)) + " months";
+	}
+	else {
+		interval = Math.round(interval/(1000*60*60*24*356)) + " years";
+	}
 
-function drawGraph(dataset){
-	var graphData = parseData(dataset);
-
-	var graph = new Rickshaw.Graph({
-		element: document.querySelector("#chart"),
-		renderer: 'line',
-		series: [{
-			data: graphData,
-			color: 'steelblue',
-			name: '{{datastream.xively_id}}'
-		}],
-		min: getMin(graphData),
-		max: getMax(graphData)
-	});
-
-	var x_axes = new Rickshaw.Graph.Axis.Time({graph: graph});
-
-	var y_axis = new Rickshaw.Graph.Axis.Y({
-		graph: graph,
-		orientation: 'left',
-		tickFormat:Rickshaw.Fixtures.Number.formatKMBT,
-		element: document.getElementById('y_axis'),
-	});
-
-	var legend = new Rickshaw.Graph.Legend({
-		element: document.querySelector('#legend'),
-		graph:graph
-	});
-
-	var hoverDetail = new Rickshaw.Graph.HoverDetail({graph: graph});
-
-	var shelving = new Rickshaw.Graph.Behavior.Series.Toggle({graph: graph, legend: legend});
-
-	graph.render();
+	document.getElementById('interval').innerHTML = "Interval: "+ interval;
+	start = start.toLocaleString();
+	document.getElementById('start').innerHTML = start;
+	end = end.toLocaleString();
+	document.getElementById('end').innerHTML = end;
 }
 
 </script>
