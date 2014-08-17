@@ -1,0 +1,20 @@
+<style type="text/css">
+#typeselect {
+    display: inline-block;
+}
+</style>
+<div class="well well-large">
+    <form action="{{url_for('index')}}" method="post" id="typeselect">
+        <input type=hidden name='dataType' value="0">
+        <input type=submit class="btn btn-primary" id="electricity" value="electricity" >
+    </form>
+    <form action="{{url_for('index')}}" method="post" id="typeselect">
+        <input type=hidden name='dataType' value="1">
+        <input type=submit class="btn btn-primary" id="heat" value="heat">
+    </form>
+    <form action="{{url_for('index')}}" method="post" id="typeselect">
+        <input type=hidden name='dataType' value="2">
+        <input type=submit class="btn btn-primary" id="water" value="water">
+    </form>
+ </div>
+{% include 'graph.html' %}

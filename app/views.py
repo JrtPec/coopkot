@@ -37,8 +37,15 @@ def internal_error(error):
 @app.route('/index/<int:page>', methods = ['GET', 'POST'])
 @login_required
 def index(page = 1):
+    if request.method == "POST":
+        dataType = int(request.form.get('dataType'))
+    else:
+        dataType = TYPE_ELECTRICITY
+    datastreams = g.user.get_datastream_type(dataType)
     return render_template('index.html',
         title = 'Dashboard',
+        datastreams = datastreams,
+        dataType = dataType
         )
 
 @facebook.tokengetter
