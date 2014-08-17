@@ -396,15 +396,24 @@ def add_feed(id):
     return render_template('add_feed.html',
         form = form)
 
-@app.route('/feed/<id>')
+@app.route('/feed/<id>', methods = ['GET','POST'])
 @login_required
 def feed(id):
     feed = Feed.query.get(id)
     if feed == None:
         flash('Feed not found.')
         abort(404)
+    if request.method == "POST":
+        dataType = request.form.get('dataType')
+    else:
+        dataType = TYPE_ELECTRICITY
+    datastreams = feed.get_type(dataType)
+    print "DATASTREAMS"
+    print datastreams
     return render_template('feed.html',
-        feed = feed
+        feed = feed,
+        datastreams = datastreams,
+        dataType = dataType
         )
 
 @app.route('/edit_feed/<id>', methods = ['GET','POST'])
@@ -469,8 +478,11 @@ def datastream(id):
     if datastream == None:
         flash('Datastream not found.')
         abort(404)
+    datastreams = []
+    datastreams.append(datastream)
     return render_template('datastream.html',
         datastream = datastream,
+        datastreams = datastreams,
         rooms = datastream.rooms,
         )
 

@@ -44,7 +44,7 @@ def get_dataset(datastream, zoom_level, timeStamp):
 	url = safe_join(url,datastream.xively_id)
 	url = url + '.json?duration=' + zoom[zoom_level]['duration']
 	url = url + '&interval=' + zoom[zoom_level]['interval']
-	url = url + '&function=average'
+	url = url + '&function=average&find_previous'
 	if timeStamp != None:
 		url = url + '&end=' + timeStamp
 	try:

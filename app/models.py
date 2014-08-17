@@ -105,6 +105,13 @@ class Feed(db.Model):
     property_id = db.Column(db.Integer, db.ForeignKey('property.id'))
     datastreams = db.relationship('Datastream', backref = 'feed', lazy = 'dynamic', cascade="all, delete, delete-orphan")
 
+    def get_type(self,dataType):
+        d = Datastream.query.filter(Datastream.feed_id == self.id,Datastream.type == dataType)
+        if d == None:
+            return None
+        else:
+            return d
+
 class Datastream(db.Model):
     __tablename__ = 'datastream'
     id = db.Column(db.Integer, primary_key = True)

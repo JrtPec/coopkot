@@ -32,7 +32,6 @@
 		<input type=submit class="btn btn-primary" id="zoom_in" value="+">
 		<input type=submit class="btn btn-primary" id="forwards" value=">>">
 	</div>
-	<input type=submit class="btn btn-primary" id="add" value="add datastream">
 </div>
 
 <div class="well well-large">
@@ -57,25 +56,22 @@ if(window.attachEvent){
 
 var zoom_level = 7;
 var graphType = "line";
-var graphData = [];
+{% for d in datastreams %}
+	var graphData{{d.id}} = [];
+{% endfor %}
 var timeStamp;
+var start;
+{% if dataType %}
+	var dataType = {{dataType}};
+{% else %}
+	var dataType = 0;
+{% endif %}
+
 
 var	chart = new CanvasJS.Chart("chartcontainer",{
 	zoomEnabled: true,
-	title :{
-		text: "Datastream: {{datastream.name}}"
-	},
-	axisY: {
-		title: "{{datastream.unit}}"
-	},
-	data: [{
-		color: 'steelblue',
-		type: graphType,
-		xValueType: "dateTime",
-		showInLegend: true,
-		dataPoints : graphData,
-		name: "{{datastream.id}}"
-	}],
+	axisY: {title: ""},
+	data: [],
 	legend: {
 		cursor:"pointer",
 		itemclick : function(e) {
@@ -93,46 +89,67 @@ var	chart = new CanvasJS.Chart("chartcontainer",{
 });
 
 function createGraph(){
-	$.post("{{url_for('get_graph_data')}}",
-		{ datastream_id: {{datastream.id}} },
-		function(data) {
-			graphData.length = 0;
-			Array.prototype.push.apply(graphData,parseData(data));
-			chart.render();
-			updateInfo();
-		});
+	{% for datastream in datastreams %}
+		$.post("{{url_for('get_graph_data')}}",
+			{ datastream_id: {{datastream.id}} },
+			function(data) {
+				graphData{{datastream.id}} = parseData(data);
+				chart.options.data.push({
+					type: graphType,
+					xValueType: "dateTime",
+					showInLegend: true,
+					dataPoints : graphData{{datastream.id}},
+					name: "{{datastream.info}}",
+					toolTipContent: "{{datastream.info}}<br>{x}<br>{y} {{datastream.unit}}"
+				});
+				chart.options.axisY.title = "{{datastream.unit}}";
+				chart.render();
+				updateInfo();
+			});
+	{% endfor %}
 	return false;
 }
 
 function updateGraph(){
 	checkLimits();
-	$.post("{{url_for('get_graph_data')}}",
-		{ datastream_id: {{datastream.id}},
-		zoom_level : zoom_level,
-		timeStamp : timeStamp
-		 },
-		function(data) {
-			graphData.length = 0;
-			Array.prototype.push.apply(graphData,parseData(data));
-			chart.render();
-			updateInfo();
-		});
+	{% for datastream in datastreams %}
+		$.post("{{url_for('get_graph_data')}}",
+			{ datastream_id: {{datastream.id}},
+			zoom_level : zoom_level,
+			timeStamp : timeStamp
+			 },
+			function(data) {
+				graphData{{datastream.id}}.length = 0;
+				Array.prototype.push.apply(graphData{{datastream.id}},parseData(data));
+				updateInfo();
+				chart.render();
+			});
+	{% endfor %}
 	return false;
 }
 
 function parseData(data){
 	var output = $.parseJSON(data);
+	console.log(output);
 	zoom_level = output.zoom_level;
 	var list = output.datapoints;
-	console.log(output);
+	//console.log(output);
 	timeStamp = list[list.length-1].at;
+	start = list[0].at;
 	var decoded_data = [];
-	$.each(list,
-		function(i,item){
-			var date = moment(item.at);
-			var value = parseInt(item.value);
+	for(var i = 1;i<list.length;i++){
+			var date = moment(list[i].at);
+			if(dataType == 3){
+				var value = parseInt(list[i].value);
+			}
+			else if(dataType==0 || dataType==1){
+				var value = parseInt(list[i].value-list[i-1].value)
+			}
+			else{
+				var value = parseFloat(list[i].value-list[i-1].value)
+			}
 			decoded_data.push({x:date.unix()*1000,y:value});
-		});
+		}
 	return decoded_data;
 }
 
@@ -151,6 +168,7 @@ $(function() {
 		if(zoom_level>3){
 			zoom_level--;
 			updateGraph();
+			updateInfo();
 		}
 
 		return false;
@@ -171,30 +189,41 @@ $(function() {
 });
 $(function() {
 	$('#line').bind('click', function(){
-		chart.options.data[0].type = "line";
+		for(var i=0; i<chart.options.data.length ; i++){
+			chart.options.data[i].type = "line";
+		}
 		chart.render();
 	});
 	return false;
 });
 $(function() {
 	$('#area').bind('click', function(){
-		chart.options.data[0].type = "stackedArea";
+		for(var i=0; i<chart.options.data.length ; i++){
+			chart.options.data[i].type = "stackedArea";
+		}
 		chart.render();
 	});
 	return false;
 });
 $(function() {
 	$('#column').bind('click', function(){
-		chart.options.data[0].type = "stackedColumn";
+		for(var i=0; i<chart.options.data.length ; i++){
+			chart.options.data[i].type = "stackedColumn";
+		}
 		chart.render();
 	});
 	return false;
 });
 
 function getTimeInterval(){
-	var start = new Date(graphData[0].x);
-	var end = new Date(graphData[graphData.length-1].x);
-	var interval = end - start;
+	if (chart.options.data.length > 0){
+		var a = new Date(timeStamp);
+		var b = new Date(start);
+		var interval = a - b;
+	}
+	else {
+		return false;
+	}
 	return interval;
 }
 
@@ -206,6 +235,7 @@ function backwards(){
 	end = new Date(end);
 	timeStamp = end.toISOString();
 	updateGraph();
+	updateInfo();
 }
 
 function forwards(){
@@ -217,6 +247,7 @@ function forwards(){
 	end = new Date(end);
 	timeStamp = end.toISOString();
 	updateGraph();
+	updateInfo();
 }
 
 function checkLimits(){
@@ -230,9 +261,12 @@ function checkLimits(){
 }
 
 function updateInfo(){
-	var start = new Date(graphData[0].x);
-	var end = new Date(graphData[graphData.length-1].x);
-	var interval = end - start;
+	if (chart.options.data.length > 0){
+		var interval = getTimeInterval();
+	}
+	else {
+	return false;
+	}
 	if(interval/(1000*60)<60){
 		interval = Math.round(interval/(1000*60)) + " minutes";
 	}
@@ -253,29 +287,12 @@ function updateInfo(){
 	}
 
 	document.getElementById('interval').innerHTML = "Interval: "+ interval;
-	start = start.toLocaleString();
-	document.getElementById('start').innerHTML = start;
-	end = end.toLocaleString();
-	document.getElementById('end').innerHTML = end;
-}
-
-function addDataset(){
-	$.post("{{url_for('get_graph_data')}}",
-		{ datastream_id: 23,
-		zoom_level : zoom_level,
-		timeStamp : timeStamp
-		 },
-		function(data) {
-			chart.options.data.push({
-				type: "stackedColumn",
-				xValueType: "dateTime",
-				showInLegend: true,
-				dataPoints : parseData(data),
-				name: "added stream"
-			});
-			chart.options.data[0].type = graphType;
-			chart.render();
-		});
+	var a = new Date(start);
+	a = a.toLocaleString();
+	document.getElementById('start').innerHTML = a;
+	var b = new Date(timeStamp);
+	b = b.toLocaleString();
+	document.getElementById('end').innerHTML = b;
 }
 
 </script>
