@@ -171,7 +171,7 @@ def edit():
 
 @app.route('/edit_user/<id>', methods = ['GET', 'POST'])
 @login_required
-@admin_required
+#@admin_required
 def edit_user(id):
     user = User.query.get(id)
     if user == None:
@@ -213,7 +213,7 @@ def delete_user(id):
 
 @app.route('/users')
 @login_required
-@admin_required
+#@admin_required
 def users():
     users = User.query.all()
     return render_template('users.html',
