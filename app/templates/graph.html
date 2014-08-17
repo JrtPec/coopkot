@@ -4,22 +4,35 @@
         position: relative;
         left: 5px;
         right: 5px;
+        margin-right: 100px;
 }
 
 #buttons {
 	text-align: center;
-	margin-top: 415px;
+	margin-top: 330px;
+}
+
+#types {
+	text-align: right;
 }
 
 </style>
 <div class="well well-large" style="height:450px">
 	<div id="chartcontainer"></div>
+	<div id="types">
+		<input type=submit class="btn btn-primary" id="line" value="line">
+		<br>
+		<input type=submit class="btn btn-primary" id="area" value="area">
+		<br>
+		<input type=submit class="btn btn-primary" id="column" value="column">
+	</div>
 	<div id="buttons">
 		<input type=submit class="btn btn-primary" id="backwards" value="<<">
 		<input type=submit class="btn btn-primary" id="zoom_out" value="-">
 		<input type=submit class="btn btn-primary" id="zoom_in" value="+">
 		<input type=submit class="btn btn-primary" id="forwards" value=">>">
 	</div>
+	<input type=submit class="btn btn-primary" id="add" value="add datastream">
 </div>
 
 <div class="well well-large">
@@ -93,7 +106,6 @@ function createGraph(){
 
 function updateGraph(){
 	checkLimits();
-	checkGraphType();
 	$.post("{{url_for('get_graph_data')}}",
 		{ datastream_id: {{datastream.id}},
 		zoom_level : zoom_level,
@@ -102,7 +114,6 @@ function updateGraph(){
 		function(data) {
 			graphData.length = 0;
 			Array.prototype.push.apply(graphData,parseData(data));
-			chart.options.data[0].type = graphType;
 			chart.render();
 			updateInfo();
 		});
@@ -158,6 +169,27 @@ $(function() {
 	});
 	return false;
 });
+$(function() {
+	$('#line').bind('click', function(){
+		chart.options.data[0].type = "line";
+		chart.render();
+	});
+	return false;
+});
+$(function() {
+	$('#area').bind('click', function(){
+		chart.options.data[0].type = "stackedArea";
+		chart.render();
+	});
+	return false;
+});
+$(function() {
+	$('#column').bind('click', function(){
+		chart.options.data[0].type = "stackedColumn";
+		chart.render();
+	});
+	return false;
+});
 
 function getTimeInterval(){
 	var start = new Date(graphData[0].x);
@@ -197,15 +229,6 @@ function checkLimits(){
 	timeStamp = end.toISOString();
 }
 
-function checkGraphType(){
-	if (zoom_level>6){
-		graphType = "line";
-	}
-	else {
-		graphType = "stackedColumn";
-	}
-}
-
 function updateInfo(){
 	var start = new Date(graphData[0].x);
 	var end = new Date(graphData[graphData.length-1].x);
@@ -234,6 +257,25 @@ function updateInfo(){
 	document.getElementById('start').innerHTML = start;
 	end = end.toLocaleString();
 	document.getElementById('end').innerHTML = end;
+}
+
+function addDataset(){
+	$.post("{{url_for('get_graph_data')}}",
+		{ datastream_id: 23,
+		zoom_level : zoom_level,
+		timeStamp : timeStamp
+		 },
+		function(data) {
+			chart.options.data.push({
+				type: "stackedColumn",
+				xValueType: "dateTime",
+				showInLegend: true,
+				dataPoints : parseData(data),
+				name: "added stream"
+			});
+			chart.options.data[0].type = graphType;
+			chart.render();
+		});
 }
 
 </script>
