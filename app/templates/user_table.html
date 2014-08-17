@@ -2,15 +2,20 @@
             <tr>
                 <th>Name</th>
                 <th>E-mail</th>
+                {% if g.user.is_admin() %}
                 <th>Property</th>
                 <th>Role</th>
+                {% endif %}
             </tr>
             {% for user in users %}
                 <tr>
                     <td><p><a href="{{url_for('user',nickname=user.nickname)}}">{{user.nickname}}</a></p></td>
                     <td><p>{{user.email}}</p></td>
+                    {% if g.user.is_admin() %}
                     <td><p><a href="{{url_for('property',id=user.property.id)}}">{{user.property.name}}</a></p></td>
                     <td><p>{{user.role}}</p></td>
+                    <td><p><a href="{{url_for('edit_user', id=user.id)}}">edit</a></p>
+                    {% endif %}
                 </tr>
             {% endfor %}
         </table>

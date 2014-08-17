@@ -44,6 +44,18 @@ class User(db.Model):
     def is_anonymous(self):
         return False
 
+    def is_admin(self):
+        if self.role == ROLE_ADMIN:
+            return True
+        else:
+            return False
+
+    def is_landlord(self):
+        if self.role == ROLE_LANDLORD:
+            return True
+        else:
+            return False
+
     def get_id(self):
         return unicode(self.id)
 

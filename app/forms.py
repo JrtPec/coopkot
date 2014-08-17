@@ -10,7 +10,6 @@ class LoginForm(Form):
     
 class EditForm(Form):
     nickname = TextField('nickname', validators = [Required()])
-    property = SelectField('property', coerce=int, validators=[optional()])
     about_me = TextAreaField('about_me', validators = [Length(min = 0, max = 140)])
     
     def __init__(self, original_nickname, *args, **kwargs):
@@ -27,6 +26,10 @@ class EditForm(Form):
             self.nickname.errors.append('This nickname is already in use. Please choose another one.')
             return False
         return True
+
+class EditUserForm(Form):
+    property = SelectField('property', coerce=int, validators=[optional()])
+    role = SelectField('role', coerce=int, validators=[optional()])
 
 class EditPropertyForm(Form):
     name = TextField('name', validators = [Required()])

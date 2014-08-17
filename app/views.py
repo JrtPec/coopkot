@@ -1,15 +1,34 @@
 from flask import render_template, flash, redirect, session, url_for, request, g, abort
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db, lm, facebook
-from forms import LoginForm, EditForm, EditPropertyForm, AddPropertyForm, UpdatePricesForm, EditPricesForm, AddRoomForm, EditRoomForm, AddFeedForm, AddDatastreamForm, AddUserContractForm, AddRoomContractForm, AddConnectionRoomDatastreamForm, AddConnectionDatastreamRoomForm
+from forms import LoginForm, EditForm, EditUserForm, EditPropertyForm, AddPropertyForm, UpdatePricesForm, EditPricesForm, AddRoomForm, EditRoomForm, AddFeedForm, AddDatastreamForm, AddUserContractForm, AddRoomContractForm, AddConnectionRoomDatastreamForm, AddConnectionDatastreamRoomForm
 from models import User, ROLE_USER, ROLE_ADMIN, ROLE_LANDLORD, TYPE_ELECTRICITY, TYPE_ELECTRICITY_INST, TYPE_HEAT, TYPE_WATER, Property, Prices, Room, Feed, Datastream, Contract, Room_Datastream
 from datetime import datetime, date
 from xively import get_datastreams, get_dataset
 from config import ADMIN_NAMES
+from functools import wraps
 
 #@app.route('/favicon.ico')
 #def favicon():
 #    return send_from_directory(os.path.join(app.root_path,'static'),'favicon.ico')
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if g.user.role != ROLE_ADMIN:
+            flash("You need to be an admin to access this functionality")
+            abort(401)
+        return f(*args, **kwargs)
+    return decorated_function
+
+def landlord_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if g.user.role < ROLE_LANDLORD:
+            flash("You need to be a landlord to access this functionality")
+            abort(401)
+        return f(*args, **kwargs)
+    return decorated_function
 
 @lm.user_loader
 def load_user(id):
@@ -22,6 +41,10 @@ def before_request():
         g.user.last_seen = datetime.utcnow()
         db.session.add(g.user)
         db.session.commit()
+
+@app.errorhandler(401)
+def internal_error(error):
+    return render_template('401.html'), 401
 
 @app.errorhandler(404)
 def internal_error(error):
@@ -41,7 +64,12 @@ def index(page = 1):
         dataType = int(request.form.get('dataType'))
     else:
         dataType = TYPE_ELECTRICITY
-    datastreams = g.user.get_datastream_type(dataType)
+    if g.user.role == ROLE_USER:
+        datastreams = g.user.get_datastream_type(dataType)
+    elif g.user.role == ROLE_LANDLORD:
+        datastreams = g.user.property.get_datastream_type(dataType)
+    else:
+        datastreams = None
     return render_template('index.html',
         title = 'Dashboard',
         datastreams = datastreams,
@@ -91,6 +119,7 @@ def facebook_authorized(resp):
     return redirect(request.args.get('next') or url_for('index'))
 
 @app.route("/logout")
+@login_required
 def logout():
     logout_user()
     return redirect(url_for('index'))
@@ -127,14 +156,8 @@ def user(nickname):
 @login_required
 def edit():
     form = EditForm(g.user.nickname)
-    form.property.choices = [(p.id, p.name) for p in Property.query.order_by('name')]
-    form.property.choices.insert(0,(0,None))
     if form.validate_on_submit():
         g.user.nickname = form.nickname.data
-        if form.property.data != 0:
-            g.user.property_id = form.property.data
-        else:
-            g.user.property_id = None
         g.user.about_me = form.about_me.data
         db.session.add(g.user)
         db.session.commit()
@@ -146,8 +169,38 @@ def edit():
     return render_template('edit.html',
         form = form)
 
+@app.route('/edit_user/<id>', methods = ['GET', 'POST'])
+@login_required
+@admin_required
+def edit_user(id):
+    user = User.query.get(id)
+    if user == None:
+        flash("User not found")
+        abort(404)
+
+    form = EditUserForm()
+    form.property.choices = [(p.id, p.name) for p in Property.query.order_by('name')]
+    form.property.choices.insert(0,(0,None))
+    form.role.choices = [(ROLE_USER,"user"),(ROLE_LANDLORD,"landlord"),(ROLE_ADMIN,"admin")]
+
+    if form.validate_on_submit():
+        if form.property.data != 0:
+            user.property_id = form.property.data
+        else:
+            user.property_id = None
+        user.role = form.role.data
+        db.session.add(user)
+        db.session.commit()
+        flash('Your changes have been saved.')
+        return redirect(url_for('users'))
+    return render_template('edit_user.html',
+        user = user,
+        form = form)
+
+
 @app.route('/delete_user/<id>')
 @login_required
+@admin_required
 def delete_user(id):
     user = User.query.get(id)
     if user == None:
@@ -160,6 +213,7 @@ def delete_user(id):
 
 @app.route('/users')
 @login_required
+@admin_required
 def users():
     users = User.query.all()
     return render_template('users.html',
@@ -167,6 +221,7 @@ def users():
 
 @app.route('/properties')
 @login_required
+@admin_required
 def properties():
     properties = Property.query.all()
     if properties == None:
@@ -176,14 +231,22 @@ def properties():
 
 @app.route('/property/<id>', methods = ['GET','POST'])
 @login_required
+@landlord_required
 def property(id):
+
     property = Property.query.get(id)
-    contracts = property.get_contracts()
+
     if property == None:
         flash('Property not found.')
         abort(404)
+
+    if g.user.role != ROLE_ADMIN:
+        if g.user.property_id != property.id:
+            abort(401)
+
+    contracts = property.get_contracts()
     if request.method == "POST":
-        dataType = request.form.get('dataType')
+        dataType = int(request.form.get('dataType'))
     else:
         dataType = TYPE_ELECTRICITY
     datastreams = property.get_datastream_type(dataType)
@@ -200,7 +263,12 @@ def property(id):
 
 @app.route('/edit_property/<id>', methods = ['GET','POST'])
 @login_required
+@landlord_required
 def edit_property(id):
+    if g.user.role != ROLE_ADMIN:
+        if g.user.property_id != int(id):
+            abort(401)
+
     property = Property.query.get(id)
     if property == None:
         flash('Property not found.')
@@ -222,6 +290,7 @@ def edit_property(id):
 
 @app.route('/add_property', methods = ['GET','POST'])
 @login_required
+@admin_required
 def add_property():
     form = AddPropertyForm()
     if form.validate_on_submit():
@@ -239,6 +308,7 @@ def add_property():
 
 @app.route('/delete_property/<id>')
 @login_required
+@admin_required
 def delete_property(id):
     p = Property.query.get(id)
     if p == None:
@@ -251,10 +321,16 @@ def delete_property(id):
 
 @app.route('/update_prices/<id>', methods = ['GET','POST'])
 @login_required
+@landlord_required
 def update_prices(id):
     prices = Prices.query.get(id)
     if prices == None:
         abort(404)
+
+    if g.user.role != ROLE_ADMIN:
+        if g.user.property_id != prices.property_id:
+            abort(401)
+
     form = UpdatePricesForm()
     if form.validate_on_submit():
         prices.end_date = datetime.utcnow()
@@ -274,11 +350,17 @@ def update_prices(id):
 
 @app.route('/prices/<id>')
 @login_required
+@landlord_required
 def prices(id):
     p = Property.query.get(id)
     if p == None:
         flash('Property not found')
         abort(404)
+
+    if g.user.role != ROLE_ADMIN:
+        if g.user.property_id != int(id):
+            abort(401)
+
     prices = p.get_prices()
     return render_template('prices.html',
         propertyName = p.name,
@@ -286,11 +368,17 @@ def prices(id):
 
 @app.route('/edit_prices/<id>', methods=['GET', 'POST'])
 @login_required
+@landlord_required
 def edit_prices(id):
     p = Prices.query.get(id)
     if p == None:
         flash('Prices not found')
         abort(404)
+
+    if g.user.role != ROLE_ADMIN:
+        if g.user.property_id != p.property_id:
+            abort(401)
+
     form = EditPricesForm()
     if form.validate_on_submit():
         p.electricity = int(form.electricity.data*100)
@@ -314,6 +402,7 @@ def edit_prices(id):
 
 @app.route('/add_room/<id>', methods = ['GET','POST'])
 @login_required
+@admin_required
 def add_room(id):
     property = Property.query.get(id)
     if property == None:
@@ -331,11 +420,17 @@ def add_room(id):
 
 @app.route('/room/<id>', methods = ['GET', 'POST'])
 @login_required
+@landlord_required
 def room(id):
     room = Room.query.get(id)
     if room == None:
         flash('Room not found.')
         abort(404)
+
+    if g.user.role != ROLE_ADMIN:
+        if g.user.property_id != room.property_id:
+            abort(401)
+
     contracts = Contract.query.filter_by(room = room)
     if request.method == "POST":
         dataType = int(request.form.get('dataType'))
@@ -353,6 +448,7 @@ def room(id):
 
 @app.route('/edit_room/<id>', methods = ['GET','POST'])
 @login_required
+@admin_required
 def edit_room(id):
     room = Room.query.get(id)
     if room == None:
@@ -375,6 +471,7 @@ def edit_room(id):
 
 @app.route('/delete_room/<id>')
 @login_required
+@admin_required
 def delete_room(id):
     r = Room.query.get(id)
     if r == None:
@@ -388,6 +485,7 @@ def delete_room(id):
 
 @app.route('/add_feed/<id>', methods = ['GET','POST'])
 @login_required
+@admin_required
 def add_feed(id):
     property = Property.query.get(id)
     if property == None:
@@ -429,13 +527,14 @@ def add_feed(id):
 
 @app.route('/feed/<id>', methods = ['GET','POST'])
 @login_required
+@admin_required
 def feed(id):
     feed = Feed.query.get(id)
     if feed == None:
         flash('Feed not found.')
         abort(404)
     if request.method == "POST":
-        dataType = request.form.get('dataType')
+        dataType = int(request.form.get('dataType'))
     else:
         dataType = TYPE_ELECTRICITY
     datastreams = feed.get_type(dataType)
@@ -447,6 +546,7 @@ def feed(id):
 
 @app.route('/edit_feed/<id>', methods = ['GET','POST'])
 @login_required
+@admin_required
 def edit_feed(id):
     feed = Feed.query.get(id)
     if feed == None:
@@ -471,6 +571,7 @@ def edit_feed(id):
 
 @app.route('/delete_feed/<id>')
 @login_required
+@admin_required
 def delete_feed(id):
     f = Feed.query.get(id)
     if f == None:
@@ -484,6 +585,7 @@ def delete_feed(id):
 
 @app.route('/add_datastream/<id>', methods = ['GET','POST'])
 @login_required
+@admin_required
 def add_datastream(id):
     feed = Feed.query.get(id)
     if feed == None:
@@ -502,6 +604,7 @@ def add_datastream(id):
 
 @app.route('/datastream/<id>')
 @login_required
+@admin_required
 def datastream(id):
     datastream = Datastream.query.get(id)
     if datastream == None:
@@ -516,22 +619,31 @@ def datastream(id):
         )
 
 @app.route('/_get_graph_data', methods=['POST'])
+@login_required
 def get_graph_data():
     datastream_id = request.form.get('datastream_id')
     zoom_level = request.form.get('zoom_level')
     timeStamp = request.form.get('timeStamp')
-    if zoom_level == None:
-        zoom_level = 7
-    zoom_level = int(zoom_level)
+    
     datastream = Datastream.query.get(int(datastream_id))
     if datastream == None:
         flash ('Datastream not found')
         abort (404)
+
+    if g.user.role != ROLE_ADMIN:
+        if g.user.property_id != datastream.feed.property_id:
+            abort(401)
+
+    if zoom_level == None:
+        zoom_level = 7
+    zoom_level = int(zoom_level)
+
     dataset = get_dataset(datastream=datastream,zoom_level=zoom_level,timeStamp=timeStamp)
     return (dataset)
 
 @app.route('/edit_datastream/<id>', methods = ['GET','POST'])
 @login_required
+@admin_required
 def edit_datastream(id):
     datastream = Datastream.query.get(id)
     if datastream == None:
@@ -558,6 +670,7 @@ def edit_datastream(id):
 
 @app.route('/delete_datastream/<id>')
 @login_required
+@admin_required
 def delete_datastream(id):
     d = Datastream.query.get(id)
     if d == None:
@@ -571,14 +684,21 @@ def delete_datastream(id):
 
 @app.route('/add_user_contract/<id>', methods=['POST', 'GET'])
 @login_required
+@landlord_required
 def add_user_contract(id):
     user = User.query.get(id)
     if user == None:
         flash('User not found.')
         abort(404)
+
     if user.property_id < 0:
         flash('User has to have a property first.')
         abort(404)
+
+    if g.user.role != ROLE_ADMIN:
+        if g.user.property_id != user.property_id:
+            abort(401)
+
     form = AddUserContractForm()
     form.room.choices = [(r.id, r.name) for r in user.property.rooms]
     form.room.choices.insert(0,(-1,'Select...'))
@@ -598,11 +718,17 @@ def add_user_contract(id):
 
 @app.route('/edit_user_contract/<id>', methods=['POST','GET'])
 @login_required
+@landlord_required
 def edit_user_contract(id):
     contract = Contract.query.get(id)
     if contract == None:
         flash('contract not found.')
         abort(404)
+
+    if g.user.role != ROLE_ADMIN:
+        if g.user.property_id != contract.room.property_id:
+            abort(401)
+
     form = AddUserContractForm()
     form.room.choices = [(r.id, r.name) for r in contract.room.property.rooms if r.id != contract.room.id]
     form.room.choices.insert(0,(contract.room.id,contract.room.name))
@@ -625,11 +751,17 @@ def edit_user_contract(id):
 
 @app.route('/add_room_contract/<id>', methods=['POST', 'GET'])
 @login_required
+@landlord_required
 def add_room_contract(id):
     room = Room.query.get(id)
     if room == None:
         flash('Room not found.')
         abort(404)
+
+    if g.user.role != ROLE_ADMIN:
+        if g.user.property_id != room.property_id:
+            abort(401)
+
     form = AddRoomContractForm()
     form.user.choices = [(u.id, u.nickname) for u in room.property.users]
     form.user.choices.insert(0,(-1,'Select...'))
@@ -649,11 +781,17 @@ def add_room_contract(id):
 
 @app.route('/edit_room_contract/<id>', methods=['POST','GET'])
 @login_required
+@landlord_required
 def edit_room_contract(id):
     contract = Contract.query.get(id)
     if contract == None:
         flash('contract not found.')
         abort(404)
+
+    if g.user.role != ROLE_ADMIN:
+        if g.user.property_id != contract.room.property_id:
+            abort(401)
+
     form = AddRoomContractForm()
     form.user.choices = [(u.id, u.nickname) for u in contract.room.property.users if u.id != contract.user.id]
     form.user.choices.insert(0,(contract.user.id,contract.user.nickname))
@@ -676,11 +814,17 @@ def edit_room_contract(id):
 
 @app.route('/delete_contract/<id>')
 @login_required
+@landlord_required
 def delete_contract(id):
     c = Contract.query.get(id)
     if c == None:
         flash('contract not found')
         abort(404)
+
+    if g.user.role != ROLE_ADMIN:
+        if g.user.property_id != c.room.property_id:
+            abort(401)
+
     db.session.delete(c)
     db.session.commit()
     flash('Contract deleted')
@@ -688,6 +832,7 @@ def delete_contract(id):
 
 @app.route('/add_connection_room_datastream/<id>', methods=['POST', 'GET'])
 @login_required
+@admin_required
 def add_connection_room_datastream(id):
     room = Room.query.get(id)
     if room == None:
@@ -708,6 +853,7 @@ def add_connection_room_datastream(id):
 
 @app.route('/edit_connection_room_datastream/<id>', methods=['POST','GET'])
 @login_required
+@admin_required
 def edit_connection_room_datastream(id):
     connection = Room_Datastream.query.get(id)
     if connection == None:
@@ -729,6 +875,7 @@ def edit_connection_room_datastream(id):
 
 @app.route('/add_connection_datastream_room/<id>', methods=['POST', 'GET'])
 @login_required
+@admin_required
 def add_connection_datastream_room(id):
     datastream = Datastream.query.get(id)
     if datastream == None:
@@ -749,6 +896,7 @@ def add_connection_datastream_room(id):
 
 @app.route('/edit_connection_datastream_room/<id>', methods=['POST','GET'])
 @login_required
+@admin_required
 def edit_connection_datastream_room(id):
     connection = Room_Datastream.query.get(id)
     if connection == None:
@@ -770,6 +918,7 @@ def edit_connection_datastream_room(id):
 
 @app.route('/delete_room_datastream/<id>')
 @login_required
+@admin_required
 def delete_room_datastream(id):
     c = Room_Datastream.query.get(id)
     if c == None:

@@ -43,10 +43,15 @@
           <ul class="nav">
             <li><a href="{{ url_for('index') }}">Dashboard</a></li>
             {% if g.user.is_authenticated() %}
-            <li><a href="{{ url_for('properties')}}">Properties</a></li>
-            <li><a href="{{ url_for('users') }}">Users</a></li>
-            <li><a href="{{ url_for('user', nickname = g.user.nickname) }}">Your Profile</a></li>
-            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+              {% if g.user.is_admin() %}
+                <li><a href="{{ url_for('properties')}}">Properties</a></li>
+                <li><a href="{{ url_for('users') }}">Users</a></li>
+              {% endif %}
+              {% if g.user.is_landlord() %}
+                <li><a href="{{ url_for('property', id=g.user.property_id)}}">{{g.user.property.name}}</a></li>
+              {% endif %}
+              <li><a href="{{ url_for('user', nickname = g.user.nickname) }}">Your Profile</a></li>
+              <li><a href="{{ url_for('logout') }}">Logout</a></li>
             {% endif %}
           </ul>
         </div>

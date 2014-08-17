@@ -31,13 +31,16 @@
 	        	</td>
     		</tr>
         {% endfor %}
+        {% if g.user.is_admin() %}
         <tr>
             <td>
                 <p><a href="{{url_for('add_room', id=property.id)}}">add room</a></p>
             </td>
         </tr>
+        {% endif %}
     </table>
 </div>
+{% if g.user.is_admin() %}
 <div class="well well-large">
 	<h2>Feeds</h2>
 	<table class="table table-hover">
@@ -55,12 +58,14 @@
         </tr>
     </table>
 </div>
+{% endif %}
 <div class="well well-large">
     <h2>Users</h2>
     {% include 'user_table.html'%}
 </div>
-
+{%if g.user.is_admin() %}
 <div class="well well-large">
 	<p><a href="{{url_for('delete_property', id=property.id)}}">delete property</a></p>
 </div> 
+{% endif %}
 {% endblock %}

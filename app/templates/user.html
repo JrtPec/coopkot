@@ -7,7 +7,9 @@
     <h1>{{user.nickname}}</h1>
     {% if user.about_me %}<p>{{user.about_me}}</p>{% endif %}
     {% if user.last_seen %}<p><em>Last seen on: {{user.last_seen}}</em></p>{% endif %}
+    {% if g.user.is_landlord() %}
     {% if user.property.name %}<p>This user lives in: <a href="{{url_for('property',id=user.property.id)}}">{{user.property.name}}</a></p>{% endif %}
+    {% endif %}
     {% if user.id == g.user.id %}
         <a href="{{url_for('edit')}}">Edit your profile</a>
     {% endif %}
@@ -15,15 +17,21 @@
 </div>
 
 {% if datastreams %}
-    {% include 'graphcontainer_user.html' %}
+    {% if g.user != user %}
+        {% include 'graphcontainer_user.html' %}
+    {% endif %}
 {% endif %}
 
 <div class="well well-large">
 	<h2>Contracts</h2>
 	{% include 'contract_table.html' %}
+    {% if g.user.is_landlord() %}
     <p><a href="{{url_for('add_user_contract',id=user.id)}}">add a new contract for this user</a></p>
+    {% endif %}
 </div>
+{% if g.user.is_admin() %}
 <div class="well well-large">
     <p><a href="{{url_for('delete_user',id=user.id)}}">delete user</a></p>
 </div>
+{% endif %}
 {% endblock %}
