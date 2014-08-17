@@ -51,6 +51,12 @@ class User(db.Model):
             return False
 
     def is_landlord(self):
+        if self.role > ROLE_LANDLORD:
+            return True
+        else:
+            return False
+
+    def is_excl_landlord(self):
         if self.role == ROLE_LANDLORD:
             return True
         else:
@@ -61,6 +67,8 @@ class User(db.Model):
 
     def get_datastream_type(self,dataType):
         c = Contract.query.filter(self == Contract.user).order_by(Contract.start_date.desc()).first()
+        if c == None:
+            return None
         if c.is_current():
             return c.room.datastreams.filter(Datastream.type == dataType)
         else:
