@@ -4,5 +4,7 @@
 {% block content %}
 <h1>Hi, {{g.user.nickname}}!</h1>
 {% include 'flash.html' %}
-{% include 'graphcontainer_dashboard.html'%}
+{% if datastreams %}
+	{% include 'graphcontainer_dashboard.html'%}
+{% endif %}
 {% endblock %}

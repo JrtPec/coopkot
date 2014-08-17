@@ -128,10 +128,13 @@ def user(nickname):
 def edit():
     form = EditForm(g.user.nickname)
     form.property.choices = [(p.id, p.name) for p in Property.query.order_by('name')]
-    form.property.choices.insert(0,(-1,None))
+    form.property.choices.insert(0,(0,None))
     if form.validate_on_submit():
         g.user.nickname = form.nickname.data
-        g.user.property_id = form.property.data
+        if form.property.data != 0:
+            g.user.property_id = form.property.data
+        else:
+            g.user.property_id = None
         g.user.about_me = form.about_me.data
         db.session.add(g.user)
         db.session.commit()

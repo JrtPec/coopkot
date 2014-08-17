@@ -14,7 +14,9 @@
     </p>
 </div>
 
-{% include 'graphcontainer_user.html' %}
+{% if datastreams %}
+    {% include 'graphcontainer_user.html' %}
+{% endif %}
 
 <div class="well well-large">
 	<h2>Contracts</h2>

@@ -1,5 +1,6 @@
 from app import db
 from app import app
+from datetime import date
 
 ROLE_USER = 0
 ROLE_LANDLORD = 1
@@ -47,9 +48,12 @@ class User(db.Model):
         return unicode(self.id)
 
     def get_datastream_type(self,dataType):
-        c = Contract.query.filter(self == Contract.user).first()
-        return c.room.datastreams.filter(Datastream.type == dataType)
-        
+        c = Contract.query.filter(self == Contract.user).order_by(Contract.start_date.desc()).first()
+        if c.is_current():
+            return c.room.datastreams.filter(Datastream.type == dataType)
+        else:
+            return None
+
     def __repr__(self):
         return '<User %r>' % (self.nickname)
 
@@ -140,6 +144,12 @@ class Contract(db.Model):
     end_date = db.Column(db.DateTime)
     user = db.relationship('User', backref="room_assoc")
     room = db.relationship('Room', backref="user_assoc")
+
+    def is_current(self):
+        if self.start_date.date() <= date.today() and self.end_date.date() >= date.today():
+            return True
+        else:
+            return False
 
 class Room_Datastream(db.Model):
     __tablename__ = 'room_datastream'
