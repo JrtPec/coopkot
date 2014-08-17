@@ -4,15 +4,15 @@
 }
 </style>
 <div class="well well-large">
-    <form action="{{url_for('feed',id=feed.id)}}" method="post" id="typeselect">
+    <form action="{{url_for('user',nickname=user.nickname)}}" method="post" id="typeselect">
         <input type=hidden name='dataType' value="0">
         <input type=submit class="btn btn-primary" id="electricity" value="electricity" >
     </form>
-    <form action="{{url_for('feed',id=feed.id)}}" method="post" id="typeselect">
+    <form action="{{url_for('user',nickname=user.nickname)}}" method="post" id="typeselect">
         <input type=hidden name='dataType' value="1">
         <input type=submit class="btn btn-primary" id="heat" value="heat">
     </form>
-    <form action="{{url_for('feed',id=feed.id)}}" method="post" id="typeselect">
+    <form action="{{url_for('user',nickname=user.nickname)}}" method="post" id="typeselect">
         <input type=hidden name='dataType' value="2">
         <input type=submit class="btn btn-primary" id="water" value="water">
     </form>

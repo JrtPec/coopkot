@@ -54,19 +54,23 @@ if(window.attachEvent){
 	}
 }
 
-var zoom_level = 7;
-var graphType = "line";
-{% for d in datastreams %}
-	var graphData{{d.id}} = [];
-{% endfor %}
-var timeStamp;
-var start;
 {% if dataType %}
 	var dataType = {{dataType}};
 {% else %}
 	var dataType = 0;
 {% endif %}
-
+{% if dataType == 0 or dataType == 3 %}
+	var zoom_level = 7;
+	var graphType = "line";
+{% else %}
+	var zoom_level = 5;
+	var graphType = "stackedColumn";
+{% endif %}
+{% for d in datastreams %}
+	var graphData{{d.id}} = [];
+{% endfor %}
+var timeStamp;
+var start;
 
 var	chart = new CanvasJS.Chart("chartcontainer",{
 	zoomEnabled: true,
@@ -91,7 +95,8 @@ var	chart = new CanvasJS.Chart("chartcontainer",{
 function createGraph(){
 	{% for datastream in datastreams %}
 		$.post("{{url_for('get_graph_data')}}",
-			{ datastream_id: {{datastream.id}} },
+			{ datastream_id: {{datastream.id}},
+				zoom_level : zoom_level },
 			function(data) {
 				graphData{{datastream.id}} = parseData(data);
 				chart.options.data.push({
@@ -155,7 +160,7 @@ function parseData(data){
 
 $(function() {
 		$('#zoom_in').bind('click', function(){
-			if(zoom_level<13){
+			if(zoom_level<14){
 				zoom_level++;
 				updateGraph();
 			}

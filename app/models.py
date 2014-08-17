@@ -45,6 +45,10 @@ class User(db.Model):
 
     def get_id(self):
         return unicode(self.id)
+
+    def get_datastream_type(self,dataType):
+        c = Contract.query.filter(self == Contract.user).first()
+        return c.room.datastreams.filter(Datastream.type == dataType)
         
     def __repr__(self):
         return '<User %r>' % (self.nickname)
@@ -71,6 +75,9 @@ class Property(db.Model):
     def get_all_datastreams(self):
         return Datastream.query.join(Feed).filter(Feed.property_id == self.id)
 
+    def get_datastream_type(self,dataType):
+        return Datastream.query.join(Feed).filter(Feed.property_id==self.id,Datastream.feed_id==Feed.id,Datastream.type==dataType)
+
     def __repr__(self):
         return '<Property %r>' % (self.name)
 
@@ -96,6 +103,9 @@ class Room(db.Model):
     def get_connection(self,datastream_id):
         return Room_Datastream.query.filter(Room_Datastream.room_id==self.id,Room_Datastream.datastream_id==datastream_id).first()
 
+    def get_datastream_type(self,dataType):
+        return self.datastreams.filter(Datastream.type==dataType)
+
 class Feed(db.Model):
     __tablename__ = 'feed'
     id = db.Column(db.Integer, primary_key = True)
@@ -106,11 +116,7 @@ class Feed(db.Model):
     datastreams = db.relationship('Datastream', backref = 'feed', lazy = 'dynamic', cascade="all, delete, delete-orphan")
 
     def get_type(self,dataType):
-        d = Datastream.query.filter(Datastream.feed_id == self.id,Datastream.type == dataType)
-        if d == None:
-            return None
-        else:
-            return d
+        return Datastream.query.filter(Datastream.feed_id == self.id,Datastream.type == dataType)
 
 class Datastream(db.Model):
     __tablename__ = 'datastream'

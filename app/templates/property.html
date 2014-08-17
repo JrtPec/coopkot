@@ -10,6 +10,9 @@
     {% endif %}
     <p><a href="{{url_for('edit_property', id = property.id)}}">Edit property info</a><p>
 </div>
+
+{% include 'graphcontainer_property.html'%}
+
 <div class="well well-large">
 	<h2>Prices</h2>
 	<p><b>Electricity: </b>€ {{prices.electricity/100}} per kWh</p>
@@ -56,6 +59,7 @@
     <h2>Users</h2>
     {% include 'user_table.html'%}
 </div>
+
 <div class="well well-large">
 	<p><a href="{{url_for('delete_property', id=property.id)}}">delete property</a></p>
 </div> 

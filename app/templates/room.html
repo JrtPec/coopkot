@@ -11,6 +11,8 @@
     <p>Property: <a href="{{url_for('property',id=room.property.id)}}">{{room.property.name}}</a></p>
     <p><a href="{{url_for('edit_room', id = room.id)}}">Edit room info</a><p>
 </div>
+
+{% include 'graphcontainer_room.html' %}
 <div class="well well-large">
 	<h2>Contracts</h2>
 	{% include 'contract_table.html' %}
@@ -24,7 +26,7 @@
             <th>Xively Id</th>
             <th>Unit</th>
         </tr>
-        {% for datastream in datastreams %}
+        {% for datastream in connections %}
             <tr>
                 <td><p><a href="{{url_for('feed',id=datastream.feed.id)}}">{{datastream.feed.xively_id}}</a></p></td>
                 <td><p><a href="{{url_for('datastream',id=datastream.id)}}">{{datastream.xively_id}}</a></p</td>

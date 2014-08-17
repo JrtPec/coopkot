@@ -95,7 +95,7 @@ def login():
     return render_template('login.html', 
         title = 'Sign In',)
     
-@app.route('/user/<nickname>')
+@app.route('/user/<nickname>', methods=['GET','POST'])
 @login_required
 def user(nickname):
     user = User.query.filter_by(nickname = nickname).first()
@@ -103,10 +103,17 @@ def user(nickname):
         flash('User ' + nickname + ' not found.')
         abort(404)
     contracts = Contract.query.filter_by(user = user)
+    if request.method == "POST":
+        dataType = int(request.form.get('dataType'))
+    else:
+        dataType = TYPE_ELECTRICITY
+    datastreams = user.get_datastream_type(dataType)
     return render_template('user.html',
         user = user,
         contracts = contracts,
-        ref = 'user'
+        ref = 'user',
+        datastreams = datastreams,
+        dataType = dataType
         )
 
 @app.route('/edit', methods = ['GET', 'POST'])
@@ -157,7 +164,7 @@ def properties():
     return render_template('properties.html',
         properties = properties)
 
-@app.route('/property/<id>')
+@app.route('/property/<id>', methods = ['GET','POST'])
 @login_required
 def property(id):
     property = Property.query.get(id)
@@ -165,13 +172,20 @@ def property(id):
     if property == None:
         flash('Property not found.')
         abort(404)
+    if request.method == "POST":
+        dataType = request.form.get('dataType')
+    else:
+        dataType = TYPE_ELECTRICITY
+    datastreams = property.get_datastream_type(dataType)
     return render_template('property.html',
         property = property,
         prices = property.get_current_prices(),
         rooms = property.rooms,
         feeds = property.feeds,
         contracts = contracts,
-        users = property.users
+        users = property.users,
+        datastreams = datastreams,
+        dataType = dataType
         )
 
 @app.route('/edit_property/<id>', methods = ['GET','POST'])
@@ -305,7 +319,7 @@ def add_room(id):
     return render_template('add_room.html',
         form = form)
 
-@app.route('/room/<id>')
+@app.route('/room/<id>', methods = ['GET', 'POST'])
 @login_required
 def room(id):
     room = Room.query.get(id)
@@ -313,9 +327,16 @@ def room(id):
         flash('Room not found.')
         abort(404)
     contracts = Contract.query.filter_by(room = room)
+    if request.method == "POST":
+        dataType = int(request.form.get('dataType'))
+    else:
+        dataType = TYPE_ELECTRICITY
+    datastreams = room.get_datastream_type(dataType)
     return render_template('room.html',
         contracts = contracts,
-        datastreams = room.datastreams,
+        connections = room.datastreams,
+        datastreams = datastreams,
+        dataType = dataType,
         room = room,
         ref = 'room'
         )
@@ -408,8 +429,6 @@ def feed(id):
     else:
         dataType = TYPE_ELECTRICITY
     datastreams = feed.get_type(dataType)
-    print "DATASTREAMS"
-    print datastreams
     return render_template('feed.html',
         feed = feed,
         datastreams = datastreams,
