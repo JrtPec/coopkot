@@ -143,15 +143,21 @@ function parseData(data){
 	start = list[0].at;
 	var decoded_data = [];
 	for(var i = 1;i<list.length;i++){
-			var date = moment(list[i-1].at);
 			if(dataType == 3){
 				var value = parseInt(list[i].value);
+				var date = moment(list[i].at);
 			}
-			else if(dataType==0 || dataType==1){
+			else if(dataType==0){
 				var value = parseInt(list[i].value-list[i-1].value)
+				var date = moment(list[i].at);
 			}
-			else{
+			else if(dataType==1){
+				var value = parseInt(list[i].value-list[i-1].value)
+				var date = moment(list[i-1].at);
+			}
+			else if(dataType==2){
 				var value = parseFloat(list[i].value-list[i-1].value)
+				var date = moment(list[i-1].at);
 			}
 			decoded_data.push({x:date.unix()*1000,y:value});
 		}
@@ -162,6 +168,7 @@ $(function() {
 		$('#zoom_in').bind('click', function(){
 			if(zoom_level<14){
 				zoom_level++;
+
 				updateGraph();
 			}
 			return false;
@@ -258,7 +265,7 @@ function forwards(){
 function checkLimits(){
 	var end = new Date(timeStamp);
 	end = Date.parse(end);
-	if (end > Date.now()){
+	if (end + getTimeInterval() > Date.now()){
 		end = Date.now();
 	}
 	end = new Date(end);
