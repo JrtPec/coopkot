@@ -4,7 +4,7 @@ from app import app, db, lm, facebook
 from forms import LoginForm, EditForm, EditUserForm, EditPropertyForm, AddPropertyForm, UpdatePricesForm, EditPricesForm, AddRoomForm, EditRoomForm, AddFeedForm, AddDatastreamForm, AddUserContractForm, AddRoomContractForm, AddConnectionRoomDatastreamForm, AddConnectionDatastreamRoomForm
 from models import User, ROLE_USER, ROLE_ADMIN, ROLE_LANDLORD, TYPE_ELECTRICITY, TYPE_ELECTRICITY_INST, TYPE_HEAT, TYPE_WATER, Property, Prices, Room, Feed, Datastream, Contract, Room_Datastream
 from datetime import datetime, date
-from xively import get_datastreams, get_dataset
+from xively import get_datastreams, get_dataset, get_usage_per_month
 from config import ADMIN_NAMES
 from functools import wraps
 
@@ -829,6 +829,37 @@ def delete_contract(id):
     db.session.commit()
     flash('Contract deleted')
     return redirect('index')
+
+@app.route('/contract_detail/<id>')
+@login_required
+def contract_detail(id):
+    c = Contract.query.get(id)
+    if c == None:
+        flash('contract not found')
+        abort(404)
+
+    if g.user.role == ROLE_LANDLORD:
+        if g.user.property_id != c.room.property_id:
+            abort(401)
+    if g.user.role == ROLE_USER:
+        if g.user != c.user:
+            abort(401)
+
+    monthly_values = []
+
+    for datastream in c.room.datastreams:
+        monthly_values.append(get_usage_per_month(datastream=datastream,start=c.start_date,end=c.end_date))
+
+    print monthly_values
+
+    return render_template('contract_detail.html',
+        contract = c,
+        user = c.user,
+        property = c.room.property,
+        room = c.room,
+        prices = c.room.property.get_current_prices(),
+        values = monthly_values
+        )
 
 @app.route('/add_connection_room_datastream/<id>', methods=['POST', 'GET'])
 @login_required

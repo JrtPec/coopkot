@@ -1,0 +1,41 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+{% include 'flash.html' %}
+<div class="well well-large">
+    <h1>Contract detail for contract n°{{contract.id}}</h1>
+
+    <p>Contract start date: {{contract.start_date.date()}}</p>
+    <p>Contract end date: {{contract.end_date.date()}}</p>
+</div>
+<div class="well well-large">
+    <h2>User: {{user.nickname}}</h2>
+    {% if user.about_me %}
+    <p>About: {{user.about_me}}</p>
+    {% endif %}
+</div>
+<div class='well well-large'>
+    <h2>Property: {{property.name}}</h2>
+    {% if property.info %}
+    <p>info: {{property.info}}</p>
+    {% endif %}
+    <h3>Prices:</h3>
+    <p><b>Electricity: </b>€ {{prices.electricity/100}} per kWh</p>
+    <p><b>Heat: </b>€ {{prices.heat/100}} per kWh</p>
+    <p><b>Water: </b>€ {{prices.water/100}} per m<sup>3</sup></p>
+    <h2>Room: {{room.name}}</h2>
+    {% if room.info %}
+    <p>info: {{room.info}}</p>
+    {% endif %}
+</div>
+<div class='well well-large'>
+    {% for set in values %}
+    <h2>{{set[0].datastream.info}}</h2>
+    {% for month in set %}
+    <h4>{{month.start_date.strftime("%B %Y")}}</h4>
+    <p>{{month.value}} {{month.datastream.unit}}</p>
+    {% endfor %}
+    {% endfor %}
+</div>
+{% endblock %}

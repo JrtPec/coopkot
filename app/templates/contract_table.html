@@ -15,6 +15,7 @@
         		<td><p>{%if g.user.is_landlord()%}<a href="{{url_for('room',id=contract.room.id)}}">{%endif%}{{contract.room.name}}</a></p></td>
         		<td><p>{{contract.start_date.date()}}</p></td>
         		<td><p>{{contract.end_date.date()}}</p></td>
+                <td><p><a href="{{url_for('contract_detail',id=contract.id)}}">contract detail</a></p></td>
                 {%if g.user.is_landlord()%}
                 <td><p>
                     {% if ref == 'user' %}<a href="{{url_for('edit_user_contract',id=contract.id)}}">edit</a>{% endif %}
