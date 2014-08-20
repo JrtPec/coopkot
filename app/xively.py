@@ -81,7 +81,7 @@ def get_usage_per_month(datastream, start, end):
 		end_value = get_datapoint(datastream=datastream,timestamp=end_temp)
 		usage =  end_value - start_value
 		month = Usage_Month(datastream = datastream,value=usage,start_date=start_temp,end_date=end_temp)
-		months.append(month)
+		months.extend(month)
 
 		if end_temp == date.today() or end_temp == end.date():
 			break
@@ -107,8 +107,7 @@ def get_datapoint(datastream,timestamp):
 		value =  decoded_data['datapoints'][0]['value']
 		return float(value)
 	except Exception, e:
-		flash('Xively request failed')
-		response = 'error'
+		flash('Lookup failed for '+datastream.info+' at '+timestamp)
 		return False
 
 def nextMonth(date):

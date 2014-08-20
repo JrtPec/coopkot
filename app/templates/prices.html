@@ -18,12 +18,14 @@
 	                    <td><p>{{entry.start_date.date()}}</p></td>
 	                    {% if entry.end_date %}
 	                    	<td><p>{{entry.end_date.date()}}</p></td>
-	                    {% else %}
+	                    {% elif entry.is_current %}
 	                    	<td><p>current</p></td>
+	                    {% else %}
+	                    	<td><p>error</p></td>
 	                    {% endif %}
-	                    <td><p>{{entry.electricity}}</p></td>
-	                    <td><p>{{entry.heat}}</p></td>
-	                    <td><p>{{entry.water}}</p></td>
+	                    <td><p>{{entry.electricity/100}}</p></td>
+	                    <td><p>{{entry.heat/100}}</p></td>
+	                    <td><p>{{entry.water/100}}</p></td>
 	                    <td><p><a href="{{url_for('edit_prices',id=entry.id)}}">edit</a></p></td>
 	                </tr>
 	            {% endfor %}

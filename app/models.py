@@ -88,7 +88,22 @@ class Property(db.Model):
     feeds = db.relationship('Feed', backref = 'property', lazy = 'dynamic', cascade="all, delete, delete-orphan")
 
     def get_current_prices(self):
-        return Prices.query.join(Property, (Property.id == Prices.property_id)).filter(Property.id == self.id).order_by(Prices.start_date.desc()).first()
+        return self.prices.order_by(Prices.start_date.desc()).first()
+
+    def get_historical_prices(self,timestamp):
+        for entry in self.prices:
+            print "timestamp: ", timestamp
+            print "start: ", entry.start_date.date()
+            print "end: ", entry.end_date.date()
+            if timestamp >= entry.start_date.date() and entry.is_current():
+                print "current"
+                return entry
+            elif timestamp >= entry.start_date.date() and timestamp < entry.end_date.date():
+                print "match"
+                return entry
+            else:
+                print "no match"
+        return None
 
     def get_prices(self):
         return Prices.query.filter(Prices.property_id == self.id).order_by(Prices.start_date.desc())
@@ -114,6 +129,12 @@ class Prices(db.Model):
     water = db.Column(db.Integer, default = 0)
     start_date = db.Column(db.DateTime)
     end_date = db.Column(db.DateTime)
+
+    def is_current(self):
+        if self.end_date == None:
+            return True
+        else:
+            return False
 
 class Room(db.Model):
     __tablename__ = 'room'
@@ -154,6 +175,9 @@ class Datastream(db.Model):
 
     def get_connection(self,room_id):
         return Room_Datastream.query.filter(Room_Datastream.datastream_id==self.id,Room_Datastream.room_id==room_id).first()
+
+    def number_of_rooms(self):
+        return rooms.count()
         
 class Contract(db.Model):
     __tablename__ = 'contract'
@@ -170,6 +194,12 @@ class Contract(db.Model):
             return True
         else:
             return False
+
+    def get_feeds(self):
+        return Feed.query.join(Datastream,Room_Datastream).filter(self.room == Room_Datastream.room)
+
+    def get_datastreams_per_feed(self,feed):
+        return Datastream.query.join(Room_Datastream).filter(self.room == Room_Datastream.room,Datastream.feed_id == feed.id)
 
 class Room_Datastream(db.Model):
     __tablename__ = 'room_datastream'
