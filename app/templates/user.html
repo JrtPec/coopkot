@@ -5,10 +5,25 @@
 {% include 'flash.html' %}
 <div class="well well-large">
     <h1>{{user.nickname}}</h1>
-    {% if user.about_me %}<p>{{user.about_me}}</p>{% endif %}
-    {% if user.last_seen %}<p><em>Last seen on: {{user.last_seen}}</em></p>{% endif %}
-    {% if g.user.is_landlord() %}
-    {% if user.property.name %}<p>This user lives in: <a href="{{url_for('property',id=user.property.id)}}">{{user.property.name}}</a></p>{% endif %}
+    <h4>Contact Info</h4>
+    <p>
+        {{user.street}} {{user.number}}<br>
+        {{user.postcode}} {{user.city}}<br>
+        {{user.country}}
+    </p>
+    <p>
+        {{user.email}}<br>
+        {{user.phone}}<br>
+        {% if user.phone2 %}
+        Secondary phone (emergency): {{user.phone2}}
+        {% endif %}
+    </p>
+    {% if user.id == g.user.id or g.user.is_landlord() %}
+    <h4>Bank info</h4>
+    <p>
+        IBAN: {{user.bank_IBAN}}<br>
+        BIC: {{user.bank_BIC}}
+    </p>
     {% endif %}
     {% if user.id == g.user.id %}
         <a href="{{url_for('edit')}}">Edit your profile</a>

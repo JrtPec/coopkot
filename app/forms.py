@@ -9,9 +9,18 @@ class LoginForm(Form):
     remember_me = BooleanField('remember_me', default = False)
     
 class EditForm(Form):
-    nickname = TextField('nickname', validators = [Required()])
-    about_me = TextAreaField('about_me', validators = [Length(min = 0, max = 140)])
-    
+    nickname = HiddenField('nickname', validators = [Required()])
+    email = HiddenField('email', validators = [Length(min = 0, max = 120)])
+    phone = TextField('phone', validators = [Length(min = 0, max = 140)])
+    phone_2 = TextField('phone2', validators = [Length(min = 0, max = 140)])
+    bank_IBAN = TextField('bank_IBAN', validators = [Length(min = 0, max = 140)])
+    bank_BIC = TextField('bank_BIC', validators = [Length(min = 0, max = 140)])
+    street = TextField('street', validators = [Length(min = 0, max = 140)])
+    number = TextField('number', validators = [Length(min = 0, max = 140)])
+    postcode = TextField('postcode', validators = [Length(min = 0, max = 140)])
+    city = TextField('city', validators = [Length(min = 0, max = 140)])
+    country = TextField('country', validators = [Length(min = 0, max = 140)])
+
     def __init__(self, original_nickname, *args, **kwargs):
         Form.__init__(self, *args, **kwargs)
         self.original_nickname = original_nickname
@@ -33,7 +42,22 @@ class EditUserForm(Form):
 
 class EditPropertyForm(Form):
     name = TextField('name', validators = [Required()])
-    info = TextAreaField('info', validators = [Length(min = 0, max = 140)])
+    street = TextField('street', validators = [Length(min = 0, max = 140)])
+    number = TextField('number', validators = [Length(min = 0, max = 140)])
+    postcode = TextField('postcode', validators = [Length(min = 0, max = 140)])
+    city = TextField('city', validators = [Length(min = 0, max = 140)])
+    country = TextField('country', validators = [Length(min = 0, max = 140)])
+    bank_IBAN = TextField('bank_IBAN', validators = [Length(min = 0, max = 140)])
+    bank_BIC = TextField('bank_BIC', validators = [Length(min = 0, max = 140)])
+    vat_nr = TextField('vat_nr', validators = [Length(min = 0, max = 140)])
+    contact_name = TextField('contact_name', validators = [Length(min = 0, max = 140)])
+    contact_mail = TextField('contact_mail', validators = [Length(min = 0, max = 140)])
+    contact_phone = TextField('contact_phone', validators = [Length(min = 0, max = 140)])
+    billing_street = TextField('billing_street', validators = [Length(min = 0, max = 140)])
+    billing_number = TextField('billing_number', validators = [Length(min = 0, max = 140)])
+    billing_postcode = TextField('billing_postcode', validators = [Length(min = 0, max = 140)])
+    billing_city = TextField('billing_city', validators = [Length(min = 0, max = 140)])
+    billing_country = TextField('billing_country', validators = [Length(min = 0, max = 140)])
 
     def __init__(self, original_name, *args, **kwargs):
         Form.__init__(self, *args, **kwargs)
@@ -52,7 +76,6 @@ class EditPropertyForm(Form):
 
 class AddPropertyForm(Form):
     name = TextField('name', validators = [Required()])
-    info = TextAreaField('info', validators = [Length(min = 0, max = 140)])
 
     def validate(self):
         if not Form.validate(self):

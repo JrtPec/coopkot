@@ -16,11 +16,150 @@
                 {% endfor %}
             </div>
         </div>
+        <h4>Address</h4>
         <div class="control-group{% if form.errors.post %} error{% endif %}">
-            <label class="control-label" for="info">Info about the property:</label>
+            <label class="control-label" for="street">Street:</label>
             <div class="controls">
-                {{ form.info(cols = 64, rows = 4, class = "span4") }}
-                {% for error in form.errors.info %}
+                {{ form.street(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.street %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="number">Number:</label>
+            <div class="controls">
+                {{ form.number(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.number %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="postcode">Postal Code:</label>
+            <div class="controls">
+                {{ form.postcode(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.postcode %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="city">City:</label>
+            <div class="controls">
+                {{ form.city(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.city %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="country">Country:</label>
+            <div class="controls">
+                {{ form.country(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.country %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <h4>Contact Info</h4>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="contact_name">Name:</label>
+            <div class="controls">
+                {{ form.contact_name(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.contact_name %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="contact_mail">E-mail:</label>
+            <div class="controls">
+                {{ form.contact_mail(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.contact_mail %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="contact_phone">Phone:</label>
+            <div class="controls">
+                {{ form.contact_phone(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.contact_phone %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <h4>Billing Address</h4>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="billing_street">Street:</label>
+            <div class="controls">
+                {{ form.billing_street(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.billing_street %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="billing_number">Number:</label>
+            <div class="controls">
+                {{ form.billing_number(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.billing_number %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="billing_postcode">Postal Code:</label>
+            <div class="controls">
+                {{ form.billing_postcode(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.billing_postcode %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="billing_city">City:</label>
+            <div class="controls">
+                {{ form.billing_city(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.billing_city %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="billing_country">Country:</label>
+            <div class="controls">
+                {{ form.billing_country(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.billing_country %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <h4>Bank Info</h4>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="bank_IBAN">IBAN:</label>
+            <div class="controls">
+                {{ form.bank_IBAN(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.bank_IBAN %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="bank_BIC">BIC:</label>
+            <div class="controls">
+                {{ form.bank_BIC(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.bank_BIC %}
+                    <span class="help-inline">[{{error}}]</span><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.errors.post %} error{% endif %}">
+            <label class="control-label" for="vat_nr">VAT n°:</label>
+            <div class="controls">
+                {{ form.vat_nr(maxlength = 140, class = "span4") }}
+                {% for error in form.errors.vat_nr %}
                     <span class="help-inline">[{{error}}]</span><br>
                 {% endfor %}
             </div>

@@ -159,14 +159,30 @@ def edit():
     form = EditForm(g.user.nickname)
     if form.validate_on_submit():
         g.user.nickname = form.nickname.data
-        g.user.about_me = form.about_me.data
+        g.user.street = form.street.data
+        g.user.number = form.number.data
+        g.user.postcode = form.postcode.data
+        g.user.city = form.city.data
+        g.user.country = form.country.data
+        g.user.bank_IBAN = form.bank_IBAN.data
+        g.user.bank_BIC = form.bank_BIC.data
+        g.user.phone = form.phone.data
+        g.user.phone_2 = form.phone_2.data
         db.session.add(g.user)
         db.session.commit()
         flash('Your changes have been saved.')
         return redirect(url_for('user',nickname=g.user.nickname))
     elif request.method != "POST":
         form.nickname.data = g.user.nickname
-        form.about_me.data = g.user.about_me
+        form.street.data = g.user.street
+        form.number.data = g.user.number
+        form.postcode.data = g.user.postcode
+        form.city.data = g.user.city
+        form.country.data = g.user.country
+        form.bank_IBAN.data = g.user.bank_IBAN
+        form.bank_BIC.data = g.user.bank_BIC
+        form.phone.data = g.user.phone
+        form.phone_2.data = g.user.phone_2
     return render_template('edit.html',
         form = form)
 
@@ -274,17 +290,48 @@ def edit_property(id):
     if property == None:
         flash('Property not found.')
         abort(404)
+    
     form = EditPropertyForm(property.name)
     if form.validate_on_submit():
         property.name = form.name.data
-        property.info = form.info.data
+        property.street = form.street.data
+        property.number = form.number.data
+        property.postcode = form.postcode.data
+        property.city = form.city.data
+        property.country = form.country.data
+        property.bank_IBAN = form.bank_IBAN.data
+        property.bank_BIC = form.bank_BIC.data
+        property.vat_nr = form.vat_nr.data
+        property.contact_name = form.contact_name.data
+        property.contact_mail = form.contact_mail.data
+        property.contact_phone = form.contact_phone.data
+        property.billing_street = form.billing_street.data
+        property.billing_number = form.billing_number.data
+        property.billing_postcode = form.billing_postcode.data
+        property.billing_city = form.billing_city.data
+        property.billing_country = form.billing_country.data
         db.session.add(property)
         db.session.commit()
         flash('Your changes have been saved.')
         return redirect(url_for('property', id = property.id))
     elif request.method != "POST":
         form.name.data = property.name
-        form.info.data = property.info
+        form.street.data = property.street
+        form.number.data = property.number
+        form.postcode.data = property.postcode
+        form.city.data = property.city
+        form.country.data = property.country
+        form.bank_IBAN.data = property.bank_IBAN
+        form.bank_BIC.data = property.bank_BIC
+        form.vat_nr.data = property.vat_nr
+        form.contact_name.data = property.contact_name
+        form.contact_mail.data = property.contact_mail
+        form.contact_phone.data = property.contact_phone
+        form.billing_street.data = property.billing_street
+        form.billing_number.data = property.billing_number
+        form.billing_postcode.data = property.billing_postcode
+        form.billing_city.data = property.billing_city
+        form.billing_country.data = property.billing_country
     return render_template('edit_property.html',
         propertyName = property.name,
         form = form)
@@ -295,7 +342,7 @@ def edit_property(id):
 def add_property():
     form = AddPropertyForm()
     if form.validate_on_submit():
-        newProperty = Property(name=form.name.data,info=form.info.data)
+        newProperty = Property(name=form.name.data)
         db.session.add(newProperty)
         db.session.commit()
         newProperty = Property.query.filter_by(name=form.name.data).first()

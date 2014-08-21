@@ -5,9 +5,28 @@
 {% include 'flash.html' %}
 <div class="well well-large">
     <h1>{{property.name}}</h1>
-    {% if property.info %}
-    	<p>{{property.info}}</p>
-    {% endif %}
+        <h4>Address</h4>
+    	<p>{{property.street}} {{property.number}}<br>
+            {{property.postcode}} {{property.city}}<br>
+            {{property.country}}
+        </p>
+        <h4>Contact Info</h4>
+        <p>
+            {{property.contact_name}}<br>
+            {{property.contact_mail}}<br>
+            {{property.contact_phone}}
+        </p>
+        <h4>Billing Info</h4>
+        <p>
+            {{property.billing_street}} {{property.billing_number}}<br>
+            {{property.billing_postcode}} {{property.billing_city}}<br>
+            {{property.billing_country}}
+        </p>
+        <p>
+            IBAN: {{property.bank_IBAN}}<br>
+            BIC: {{property.bank_BIC}}<br>
+            VAT n°: {{property.vat_nr}}
+        </p>
     <p><a href="{{url_for('edit_property', id = property.id)}}">Edit property info</a><p>
 </div>
 
