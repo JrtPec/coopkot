@@ -62,34 +62,6 @@ def get_dataset(datastream, zoom_level, timeStamp):
 		response = 'error'
 		return False
 
-class Usage_Month(dict):
-	def __init__(self,datastream,value,start_date,end_date):
-		self.datastream = datastream
-		self.value = value
-		self.start_date =  start_date
-		self.end_date = end_date
-
-def get_usage_per_month(datastream, start, end):
-	months = []
-	if start.date() > date.today():
-		return months
-	start_temp = start.date()
-	start_value = get_datapoint(datastream=datastream,timestamp=start_temp)
-	
-	while True:
-		end_temp = min(date.today(),end.date(),nextMonth(start_temp))
-		end_value = get_datapoint(datastream=datastream,timestamp=end_temp)
-		usage =  end_value - start_value
-		month = Usage_Month(datastream = datastream,value=usage,start_date=start_temp,end_date=end_temp)
-		months.extend(month)
-
-		if end_temp == date.today() or end_temp == end.date():
-			break
-		else:
-			start_temp = end_temp
-			start_value = end_value
-	return months
-
 def get_datapoint(datastream,timestamp):
 	timestamp = datetime.combine(timestamp, datetime.min.time())
 	timestamp = timestamp.isoformat()
@@ -110,9 +82,3 @@ def get_datapoint(datastream,timestamp):
 		flash('Lookup failed for '+datastream.info+' at '+timestamp)
 		return False
 
-def nextMonth(date):
-	if date.month < 12:
-		next = date.replace(date.year,date.month+1,1)
-	else:
-		next = date.replace(date.year+1,1,1)
-	return next

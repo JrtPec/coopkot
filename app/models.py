@@ -116,13 +116,17 @@ class Property(db.Model):
 
     def get_historical_prices(self,timestamp):
         for entry in self.prices:
+            if entry.end_date == None:
+                end = date.today()
+            else:
+                end = entry.end_date.date()
             print "timestamp: ", timestamp
             print "start: ", entry.start_date.date()
-            print "end: ", entry.end_date.date()
+            print "end: ", end
             if timestamp >= entry.start_date.date() and entry.is_current():
                 print "current"
                 return entry
-            elif timestamp >= entry.start_date.date() and timestamp < entry.end_date.date():
+            elif timestamp >= entry.start_date.date() and timestamp < end:
                 print "match"
                 return entry
             else:

@@ -1,0 +1,205 @@
+<html>
+	<head>
+		<style type="text/css">
+			h1{
+				font-size: x-large;
+			}
+			h2{
+				font-size: 200%
+			}
+			p{
+				font-size: 100%
+			}
+			table, th, td {
+				border: 1px solid black;
+				border-collapse: collapse;
+			}
+			table {
+				width: 100%;
+			}
+			th{
+				padding: 2px;
+				vertical-align: middle;
+			}
+			td {
+				padding: 2px;
+				vertical-align: middle;
+			}
+		</style>
+	</head>
+		<body>
+			{% block body %}
+			<div>
+			    <h1>Contract detail for contract n&deg;{{contract.id}}</h1>
+			    <hr>
+			    <h2>{{month.start_date.strftime("%B %Y")}}</h2>
+			        <p><em>{{month.start_date.strftime("%d %b '%y")}} - {{month.end_date.strftime("%d %b '%y")}}</em></p>
+			        <h1>Total: &euro; {{month.cost_total}}</h1>
+			</div>
+			<hr>
+			<div class="container">
+			    <h3>Tenant: {{user.nickname}}</h3>
+			    <h4>Contact Info</h4>
+			    <p>
+			        {{user.street}} {{user.number}}<br>
+			        {{user.postcode}} {{user.city}}<br>
+			        {{user.country}}
+			    </p>
+			    <p>
+			        {{user.email}}<br>
+			        {{user.phone}}<br>
+			        {% if user.phone2 %}
+			        Secondary phone (emergency): {{user.phone2}}
+			        {% endif %}
+			    </p>
+			    <h4>Bank info</h4>
+			    <p>
+			        IBAN: {{user.bank_IBAN}}<br>
+			        BIC: {{user.bank_BIC}}
+			    </p>
+			    <hr>
+			    <h3>Property: {{property.name}}</h3>
+			    <h4>Address</h4>
+		    	<p>{{property.street}} {{property.number}}<br>
+		            {{property.postcode}} {{property.city}}<br>
+		            {{property.country}}
+		        </p>
+		        <h4>Contact Info</h4>
+		        <p>
+		            {{property.contact_name}}<br>
+		            {{property.contact_mail}}<br>
+		            {{property.contact_phone}}
+		        </p>
+		        <h4>Billing Info</h4>
+		        <p>
+		            {{property.billing_street}} {{property.billing_number}}<br>
+		            {{property.billing_postcode}} {{property.billing_city}}<br>
+		            {{property.billing_country}}
+		        </p>
+		        <p>
+		            IBAN: {{property.bank_IBAN}}<br>
+		            BIC: {{property.bank_BIC}}<br>
+		            VAT n&deg;: {{property.vat_nr}}
+		        </p>
+		        <hr>
+			    <h3>Room: {{room.name}}</h3>
+			    {% if room.info %}
+			    <p>info: {{room.info}}</p>
+			    {% endif %}
+			</div>
+			<hr>
+			<div class='well well-large'>
+			    <div>
+			        <div class="well well-large" id="ledger">
+			            <h2>Electricity</h2>
+			            <table class="table table-hover">
+			                <tr>
+			                    <th>Name</th>
+			                    <th>Total Usage (kWh)</th>
+			                    <th>Shared by</th>
+			                    <th>Usage (kWh)</th>
+			                    <th>Price (&euro;/kWh)</th>
+			                    <th>Cost</th>
+			                </tr>
+			                {% for usage in month.usages %}
+			                {% if usage.datastream.type == 0 %}
+			                <tr>
+			                    <td><p>{{usage.datastream.info}}</p></td>
+			                    {% if usage.shared != 1 %}
+			                    <td><p>{{usage.total_value}}</p></td>
+			                    <td><p>{{usage.shared}}</p></td>
+			                    {% else %}
+			                    <td></td>
+			                    <td></td>
+			                    {% endif %}
+			                    <td><p>{{usage.value}}</p></td>
+			                </tr>
+			                {% endif %}
+			                {% endfor %}
+			                <tr>
+			                    <td></td>
+			                    <td></td>
+			                    <td><p><b>TOTAL</b></p></td>
+			                    <td><p><b>{{month.total_e}}</b></p></td>
+			                    <td><p><b>{{property.get_historical_prices(month.start_date).electricity/100}}</b></p></td>
+			                    <td><p><b>&euro; {{month.cost_e}}</b></p></td>
+			                </tr>
+			            </table>
+			        </div>
+			        <div class="well well-large" id="ledger">
+			            <h2>Heat</h2>
+			            <table class="table table-hover">
+			                <tr>
+			                    <th>Name</th>
+			                    <th>Total Usage (kWh)</th>
+			                    <th>Shared by</th>
+			                    <th>Usage (kWh)</th>
+			                    <th>Price (&euro;/kWh)</th>
+			                    <th>Cost</th>
+			                </tr>
+			                {% for usage in month.usages %}
+			                {% if usage.datastream.type == 1 %}
+			                <tr>
+			                    <td><p>{{usage.datastream.info}}</p></td>
+			                    {% if usage.shared != 1 %}
+			                    <td><p>{{usage.total_value}}</p></td>
+			                    <td><p>{{usage.shared}}</p></td>
+			                    {% else %}
+			                    <td></td>
+			                    <td></td>
+			                    {% endif %}
+			                    <td><p>{{usage.value}}</p></td>
+			                </tr>
+			                {% endif %}
+			                {% endfor %}
+			                <tr>
+			                    <td></td>
+			                    <td></td>
+			                    <td><p><b>TOTAL</b></p></td>
+			                    <td><p><b>{{month.total_h}}</b></p></td>
+			                    <td><p><b>{{property.get_historical_prices(month.start_date).heat/100}}</b></p></td>
+			                    <td><p><b>&euro; {{month.cost_h}}</b></p></td>
+			                </tr>
+			            </table>
+			        </div>
+			        <div class="well well-large" id="ledger">
+			            <h2>Water</h2>
+			            <table class="table table-hover">
+			                <tr>
+			                    <th>Name</th>
+			                    <th>Total Usage (m<sup>3</sup>)</th>
+			                    <th>Shared by</th>
+			                    <th>Usage (m<sup>3</sup>)</th>
+			                    <th>Price (&euro;/m<sup>3</sup>)</th>
+			                    <th>Cost</th>
+			                </tr>
+			                {% for usage in month.usages %}
+			                {% if usage.datastream.type == 2 %}
+			                <tr>
+			                    <td><p>{{usage.datastream.info}}</p></td>
+			                    {% if usage.shared != 1 %}
+			                    <td><p>{{usage.total_value}}</p></td>
+			                    <td><p>{{usage.shared}}</p></td>
+			                    {% else %}
+			                    <td></td>
+			                    <td></td>
+			                    {% endif %}
+			                    <td><p>{{usage.value}}</p></td>
+			                </tr>
+			                {% endif %}
+			                {% endfor %}
+			                <tr>
+			                    <td></td>
+			                    <td></td>
+			                    <td><p><b>TOTAL</b></p></td>
+			                    <td><p><b>{{month.total_w}}</b></p></td>
+			                    <td><p><b>{{property.get_historical_prices(month.start_date).water/100}}</b></p></td>
+			                    <td><p><b>&euro; {{month.cost_w}}</b></p></td>
+			                </tr>
+			            </table>
+			        </div>
+			    </div>
+			</div>
+			{% endblock %}
+		</body>
+</html>

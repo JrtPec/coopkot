@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, session, url_for, request, g, abort
+from flask import render_template, flash, redirect, session, url_for, request, g, abort, Response
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db, lm, facebook
 from forms import LoginForm, EditForm, EditUserForm, EditPropertyForm, AddPropertyForm, UpdatePricesForm, EditPricesForm, AddRoomForm, EditRoomForm, AddFeedForm, AddDatastreamForm, AddUserContractForm, AddRoomContractForm, AddConnectionRoomDatastreamForm, AddConnectionDatastreamRoomForm
@@ -8,6 +8,7 @@ from xively import get_datastreams, get_dataset
 from contract import get_usage_per_month, Month, Usage
 from config import ADMIN_NAMES
 from functools import wraps
+from pdfs import create_pdf
 
 #@app.route('/favicon.ico')
 #def favicon():
@@ -30,6 +31,9 @@ def landlord_required(f):
             abort(401)
         return f(*args, **kwargs)
     return decorated_function
+
+#mimerender.register_mime('pdf',('application/pdf',))
+#mimerender = mimerender.FlaskMimeRender(global_charset='UTF-8')
 
 @lm.user_loader
 def load_user(id):
@@ -920,6 +924,29 @@ def contract_detail(id):
         room = c.room,
         months = monthly_values
         )
+
+@app.route('/pdf_contract/<id>/<start_date>/<end_date>.pdf')
+@login_required
+def pdf_contract(id,start_date,end_date):
+    c = Contract.query.get(id)
+    if c == None:
+        flash('contract not found')
+        abort(404)
+
+    if g.user.role == ROLE_LANDLORD:
+        if g.user.property_id != c.room.property_id:
+            abort(401)
+    if g.user.role == ROLE_USER:
+        if g.user != c.user:
+            abort(401)
+
+    start = datetime.strptime(start_date, "%Y-%m-%d")
+    end = datetime.strptime(end_date, "%Y-%m-%d")
+
+    values = get_usage_per_month(datastreams=c.room.datastreams,start=start,end=end,property=c.room.property)[0]
+
+    pdf = create_pdf(render_template('pdf_contract.html',contract = c,user=c.user,property=c.room.property,room=c.room,month=values))
+    return Response(pdf, mimetype='application/pdf')
 
 @app.route('/add_connection_room_datastream/<id>', methods=['POST', 'GET'])
 @login_required

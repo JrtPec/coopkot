@@ -16,15 +16,49 @@
     <p>Contract end date: {{contract.end_date.date()}}</p>
 </div>
 <div class="well well-large">
-    <h4>User: {{user.nickname}}</h4>
-    {% if user.about_me %}
-    <p>About: {{user.about_me}}</p>
-    {% endif %}
-    <h4>Property: {{property.name}}</h4>
-    {% if property.info %}
-    <p>info: {{property.info}}</p>
-    {% endif %}
-    <h4>Room: {{room.name}}</h4>
+    <h3>Tenant: {{user.nickname}}</h3>
+    <h4>Contact Info</h4>
+                <p>
+                    {{user.street}} {{user.number}}<br>
+                    {{user.postcode}} {{user.city}}<br>
+                    {{user.country}}
+                </p>
+                <p>
+                    {{user.email}}<br>
+                    {{user.phone}}<br>
+                    {% if user.phone2 %}
+                    Secondary phone (emergency): {{user.phone2}}
+                    {% endif %}
+                </p>
+                <h4>Bank info</h4>
+                <p>
+                    IBAN: {{user.bank_IBAN}}<br>
+                    BIC: {{user.bank_BIC}}
+                </p>
+    <h3>Property: {{property.name}}</h3>
+    <h4>Address</h4>
+                <p>{{property.street}} {{property.number}}<br>
+                    {{property.postcode}} {{property.city}}<br>
+                    {{property.country}}
+                </p>
+                <h4>Contact Info</h4>
+                <p>
+                    {{property.contact_name}}<br>
+                    {{property.contact_mail}}<br>
+                    {{property.contact_phone}}
+                </p>
+                <h4>Billing Info</h4>
+                <p>
+                    {{property.billing_street}} {{property.billing_number}}<br>
+                    {{property.billing_postcode}} {{property.billing_city}}<br>
+                    {{property.billing_country}}
+                </p>
+                <p>
+                    IBAN: {{property.bank_IBAN}}<br>
+                    BIC: {{property.bank_BIC}}<br>
+                    VAT n&deg;: {{property.vat_nr}}
+                </p>
+    <h3>Room: {{room.name}}</h3>
     {% if room.info %}
     <p>info: {{room.info}}</p>
     {% endif %}
@@ -34,6 +68,7 @@
     <div>
         <h2>{{month.start_date.strftime("%B %Y")}}</h2>
         <p><em>{{month.start_date.strftime("%d %b '%y")}} - {{month.end_date.strftime("%d %b '%y")}}</em></p>
+        <p><a href="{{url_for('pdf_contract',id=contract.id,start_date=month.start_date,end_date=month.end_date)}}">print monthly detail to pdf</a></p>
         <h3>Total: € {{month.cost_total}}</h3>
         <div class="well well-large" id="ledger">
             <h3>Electricity</h3>
