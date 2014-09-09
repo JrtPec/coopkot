@@ -2,10 +2,10 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db, lm, facebook
 from forms import LoginForm, EditForm, EditUserForm, EditPropertyForm, AddPropertyForm, UpdatePricesForm, EditPricesForm, AddRoomForm, EditRoomForm, AddFeedForm, AddDatastreamForm, AddUserContractForm, AddRoomContractForm, AddConnectionRoomDatastreamForm, AddConnectionDatastreamRoomForm
-from models import User, ROLE_USER, ROLE_ADMIN, ROLE_LANDLORD, TYPE_ELECTRICITY, TYPE_ELECTRICITY_INST, TYPE_HEAT, TYPE_WATER, Property, Prices, Room, Feed, Datastream, Contract, Room_Datastream
+from models import User, ROLE_USER, ROLE_ADMIN, ROLE_LANDLORD, TYPE_ELECTRICITY, TYPE_ELECTRICITY_INST, TYPE_HEAT, TYPE_WATER, Property, Prices, Room, Feed, Datastream, Contract, Room_Datastream, getUnit
 from datetime import datetime, date
 from xively import get_datastreams, get_dataset
-from contract import get_usage_per_month, Month, Usage
+from contract import get_usage_per_month, Month, Usage, get_last_week as get_last_week_values, get_last_month as get_last_month_values, get_last_year as get_last_year_values
 from config import ADMIN_NAMES
 from functools import wraps
 from pdfs import create_pdf
@@ -710,6 +710,82 @@ def get_graph_data():
 
     dataset = get_dataset(datastream=datastream,zoom_level=zoom_level,timeStamp=timeStamp)
     return (dataset)
+
+@app.route('/_get_last_week', methods=['POST'])
+@login_required
+def get_last_week():
+    print "Fetching last week"
+    room_id = request.form.get('room_id')
+    datatype = int(request.form.get('datatype'))
+
+    room = Room.query.get(int(room_id))
+    if room == None:
+        flash('Room not found')
+        abort(404)
+    if g.user.role != ROLE_ADMIN:
+        if g.user.property_id != datastream.feed.property_id:
+            abort(401)
+
+    datastreams=room.get_datastream_type(dataType=datatype)
+    print "going to contract"
+    value = get_last_week_values(datastreams=datastreams,property=room.property)
+    print "back from contract"
+    print value
+    if datatype != 2:
+        value = round(value/1000,2)
+    else:
+        value = round(value,2)
+    value = str(value) + " " + getUnit(datatype=datatype)
+    print value
+    return value
+
+@app.route('/_get_last_month', methods=['POST'])
+@login_required
+def get_last_month():
+    room_id = request.form.get('room_id')
+    datatype = int(request.form.get('datatype'))
+
+    room = Room.query.get(int(room_id))
+    if room == None:
+        flash('Room not found')
+        abort(404)
+    if g.user.role != ROLE_ADMIN:
+        if g.user.property_id != datastream.feed.property_id:
+            abort(401)
+
+    datastreams=room.get_datastream_type(dataType=datatype)
+    value = get_last_month_values(datastreams=datastreams,property=room.property)
+    if datatype != 2:
+        value = round(value/1000,2)
+    else:
+        value = round(value,2)
+    value = str(value) + " " + getUnit(datatype=datatype)
+    print value
+    return value
+
+@app.route('/_get_last_year', methods=['POST'])
+@login_required
+def get_last_year():
+    room_id = request.form.get('room_id')
+    datatype = int(request.form.get('datatype'))
+
+    room = Room.query.get(int(room_id))
+    if room == None:
+        flash('Room not found')
+        abort(404)
+    if g.user.role != ROLE_ADMIN:
+        if g.user.property_id != datastream.feed.property_id:
+            abort(401)
+
+    datastreams=room.get_datastream_type(dataType=datatype)
+    value = get_last_year_values(datastreams=datastreams,property=room.property)
+    if datatype != 2:
+        value = round(value/1000,2)
+    else:
+        value = round(value,2)
+    value = str(value) + " " + getUnit(datatype=datatype)
+    print value
+    return value
 
 @app.route('/edit_datastream/<id>', methods = ['GET','POST'])
 @login_required

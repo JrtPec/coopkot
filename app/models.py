@@ -83,6 +83,16 @@ class User(db.Model):
         else:
             return None
 
+    def get_room(self):
+        c = Contract.query.filter(self==Contract.user).order_by(Contract.start_date.desc()).first()
+        if c == None:
+            return None
+        if c.is_current():
+
+            return int(c.room_id)
+        else:
+            return None
+
     def __repr__(self):
         return '<User %r>' % (self.nickname)
 
@@ -236,3 +246,9 @@ class Room_Datastream(db.Model):
     datastream_id = db.Column(db.Integer, db.ForeignKey('datastream.id'))
     room = db.relationship('Room', backref="datastream_assoc")
     datastream = db.relationship('Datastream', backref="room_assoc")
+
+def getUnit(datatype):
+    if datatype == 2:
+        return "m<sup>3</sup>"
+    else:
+        return "kWh"

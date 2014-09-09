@@ -1,5 +1,5 @@
 from xively import get_datapoint
-from datetime import date
+from datetime import date, datetime, timedelta
 
 def nextMonth(date):
 	if date.month < 12:
@@ -68,3 +68,30 @@ def get_usage_per_month(datastreams, start, end, property):
 			start_temp = end_temp
 			start_values = end_values
 	return months
+
+def get_last_week(datastreams,property):
+	total = 0
+	for datastream in datastreams:
+		end_value = get_datapoint(datastream=datastream,timestamp=datetime.utcnow())
+		start_value = get_datapoint(datastream=datastream,timestamp=datetime.utcnow()-timedelta(weeks=1))
+		usage = end_value - start_value
+		total = total + usage
+	return total
+
+def get_last_month(datastreams,property):
+	total = 0
+	for datastream in datastreams:
+		end_value = get_datapoint(datastream=datastream,timestamp=datetime.utcnow())
+		start_value = get_datapoint(datastream=datastream,timestamp=datetime.utcnow()-timedelta(weeks=4))
+		usage = end_value - start_value
+		total = total + usage
+	return total
+
+def get_last_year(datastreams,property):
+	total = 0
+	for datastream in datastreams:
+		end_value = get_datapoint(datastream=datastream,timestamp=datetime.utcnow())
+		start_value = get_datapoint(datastream=datastream,timestamp=datetime.utcnow()-timedelta(weeks=52))
+		usage = end_value - start_value
+		total = total + usage
+	return total

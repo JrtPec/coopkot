@@ -19,3 +19,64 @@
     </form>
  </div>
 {% include 'graph.html' %}
+<div class="well well large">
+    <h3>Key Figures</h3>
+    <p>Last week: <em id="last_week"></em></p>
+    <p>Last month: <em id="last_month"></em></p>
+    <p>Last year: <em id="last_year"></em></p>
+</div>
+<script type="text/javascript">
+if(window.attachEvent){
+    window.attachEvent('onload',get_last_week);
+    window.attachEvent('onload',get_last_month);
+    window.attachEvent('onload',get_last_year);
+} else {
+    if(window.onload) {
+        var curronload = window.onload;
+        var newonload = function() {
+            curronload();
+            get_last_week();
+            get_last_month();
+            get_last_year();
+        };
+        window.onload = newonload;
+    } else {
+        window.onload = get_last_week;
+        window.onload = get_last_month;
+        window.onload = get_last_year;
+    }
+}
+var last_week;
+var last_month;
+var last_year;
+function get_last_week(){
+        $.post("{{url_for('get_last_week')}}",
+            { room_id: {{room.id}},
+                datatype : {{dataType}} },
+            function(data) {
+                last_week = data;
+                document.getElementById('last_week').innerHTML = last_week;
+            });
+    return false;
+}
+function get_last_month(){
+        $.post("{{url_for('get_last_month')}}",
+            { room_id: {{room.id}},
+                datatype : {{dataType}} },
+            function(data) {
+                last_month = data;
+                document.getElementById('last_month').innerHTML = last_month;
+            });
+    return false;
+}
+function get_last_year(){
+        $.post("{{url_for('get_last_year')}}",
+            { room_id: {{room.id}},
+                datatype : {{dataType}} },
+            function(data) {
+                last_year = data;
+                document.getElementById('last_year').innerHTML = last_year;
+            });
+    return false;
+}
+</script>
