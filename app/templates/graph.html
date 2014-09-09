@@ -17,7 +17,10 @@
 }
 
 </style>
-<div class="well well-large" style="height:450px">
+<div class="well well-large" style="height:550px">
+	<h2 id="datatype"></h2>
+	<h4 id="interval"></h4>
+	<em id="start"></em> - <em id="end"></em>
 	<div id="chartcontainer"></div>
 	<div id="types">
 		<input type=submit class="btn btn-primary" id="line" value="line">
@@ -32,10 +35,6 @@
 		<input type=submit class="btn btn-primary" id="zoom_in" value="+">
 		<input type=submit class="btn btn-primary" id="forwards" value=">>">
 	</div>
-</div>
-
-<div class="well well-large">
-	<h2 id="interval"></h2><em id="start"></em> - <em id="end"></em>
 </div>
 
 <script type="text/javascript">
@@ -305,6 +304,16 @@ function updateInfo(){
 	var b = new Date(timeStamp);
 	b = b.toLocaleString();
 	document.getElementById('end').innerHTML = b;
+
+	var text;
+	if(dataType==1){
+		text = "Heat";
+	} else if(dataType==2){
+		text = "Water";
+	} else {
+		text = "Electricity";
+	}
+	document.getElementById('datatype').innerHTML = text;
 }
 
 </script>

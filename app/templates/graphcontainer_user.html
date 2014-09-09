@@ -4,6 +4,7 @@
 }
 </style>
 <div class="well well-large">
+    <h4>Select an energy type to visualize:</h4>
     <form action="{{url_for('user',nickname=user.nickname)}}" method="post" id="typeselect">
         <input type=hidden name='dataType' value="0">
         <input type=submit class="btn btn-primary" id="electricity" value="electricity" >
