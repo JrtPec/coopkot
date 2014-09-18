@@ -4,6 +4,16 @@
 {% block content %}
 <h1>Hi, {{g.user.nickname}}!</h1>
 {% include 'flash.html' %}
+{% if g.user.property_id == None %}
+	<div class="well well-large">
+		<p>You haven't been assigned a property yet, <a href="{{url_for('request_access')}}">click here</a> to request access to a property</p>
+	</div>
+{% endif %}
+{% if g.user.property_id and datastreams == None %}
+	<div class="well well-large">
+		<p>The landlord for {{g.user.property.name}} hasn't assigned you to a room yet. Please be patient or contact your landlord. In the meantime, <a href="{{url_for('user', nickname = g.user.nickname)}}">please update your user account info</a>.</p>
+	</div>
+{% endif %}
 {% if datastreams %}
 	{% include 'graphcontainer_dashboard.html'%}
 {% endif %}

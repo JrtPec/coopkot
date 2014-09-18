@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, session, url_for, request, g, abort, Response
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db, lm, facebook
-from forms import LoginForm, EditForm, EditUserForm, EditPropertyForm, AddPropertyForm, UpdatePricesForm, EditPricesForm, AddRoomForm, EditRoomForm, AddFeedForm, AddDatastreamForm, AddUserContractForm, AddRoomContractForm, AddConnectionRoomDatastreamForm, AddConnectionDatastreamRoomForm
+from forms import LoginForm, EditForm, EditUserForm, EditPropertyForm, AddPropertyForm, UpdatePricesForm, EditPricesForm, AddRoomForm, EditRoomForm, AddFeedForm, AddDatastreamForm, AddUserContractForm, AddRoomContractForm, AddConnectionRoomDatastreamForm, AddConnectionDatastreamRoomForm, RequestPropertyForm
 from models import User, ROLE_USER, ROLE_ADMIN, ROLE_LANDLORD, TYPE_ELECTRICITY, TYPE_ELECTRICITY_INST, TYPE_HEAT, TYPE_WATER, Property, Prices, Room, Feed, Datastream, Contract, Room_Datastream, getUnit
 from datetime import datetime, date
 from xively import get_datastreams, get_dataset
@@ -80,6 +80,26 @@ def index(page = 1):
         datastreams = datastreams,
         dataType = dataType
         )
+
+@app.route('/request_access', methods = ['GET', 'POST'])
+@login_required
+def request_access():
+    if g.user.property_id != None:
+        flash('You already have been assigned to a property. If this is incorrect, please contact your landlord or administrator')
+        return redirect(url_for('index'))
+    form = RequestPropertyForm()
+    form.property.choices = [(p.id, p.name) for p in Property.query.order_by('name')]
+    form.property.choices.insert(0,(0,None))
+    if form.validate_on_submit():
+        g.user.property_id = int(form.property.data)
+        db.session.add(g.user)
+        db.session.commit()
+        flash('You have been assigned to property '+g.user.property.name)
+        return redirect(url_for('index'))
+    return render_template('request_access.html',
+        form = form)
+
+
 
 @facebook.tokengetter
 def get_facebook_token():

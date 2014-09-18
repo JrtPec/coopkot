@@ -132,3 +132,6 @@ class AddConnectionRoomDatastreamForm(Form):
 
 class AddConnectionDatastreamRoomForm(Form):
     room = SelectField('room', coerce=int, validators=[Required()])
+
+class RequestPropertyForm(Form):
+    property = SelectField('property', coerce=int, validators=[Required()])
