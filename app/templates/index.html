@@ -11,7 +11,7 @@
 {% endif %}
 {% if g.user.property_id and datastreams == None %}
 	<div class="well well-large">
-		<p>The landlord for {{g.user.property.name}} hasn't assigned you to a room yet. Please be patient or contact your landlord. In the meantime, <a href="{{url_for('user', nickname = g.user.nickname)}}">please update your user account info</a>.</p>
+		<p>The landlord for {{g.user.property.name}} hasn't assigned you to a room yet. Please be patient or contact your landlord. In the meantime, <a href="{{url_for('user', nickname = g.user.nickname)}}">please make sure your user account info is correct</a>.</p>
 	</div>
 {% endif %}
 {% if datastreams %}
