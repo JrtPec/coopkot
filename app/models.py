@@ -1,6 +1,6 @@
 from app import db
 from app import app
-from datetime import date
+from datetime import date, datetime
 
 ROLE_USER = 0
 ROLE_LANDLORD = 1
@@ -31,6 +31,7 @@ class User(db.Model):
     postcode = db.Column(db.String(140), default='')
     city = db.Column(db.String(140), default='')
     country = db.Column(db.String(140), default='')
+    feedback_messages = db.relationship('Feedback', backref = 'sender', lazy = 'dynamic')
 
     @staticmethod
     def make_unique_nickname(nickname):
@@ -252,3 +253,11 @@ def getUnit(datatype):
         return "m<sup>3</sup>"
     else:
         return "kWh"
+
+class Feedback(db.Model):
+    __tablename__ = 'feedback'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    text = db.Column(db.String(500), default='')
+    timestamp = db.Column(db.DateTime)
+    read = db.Column(db.SmallInteger, default=0)

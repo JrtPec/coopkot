@@ -135,3 +135,6 @@ class AddConnectionDatastreamRoomForm(Form):
 
 class RequestPropertyForm(Form):
     property = SelectField('property', coerce=int, validators=[Required()])
+
+class FeedbackForm(Form):
+    text = TextAreaField('text', validators = [Length(min=0,max=500),Required()])

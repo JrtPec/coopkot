@@ -1,8 +1,8 @@
 from flask import render_template, flash, redirect, session, url_for, request, g, abort, Response
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db, lm, facebook
-from forms import LoginForm, EditForm, EditUserForm, EditPropertyForm, AddPropertyForm, UpdatePricesForm, EditPricesForm, AddRoomForm, EditRoomForm, AddFeedForm, AddDatastreamForm, AddUserContractForm, AddRoomContractForm, AddConnectionRoomDatastreamForm, AddConnectionDatastreamRoomForm, RequestPropertyForm
-from models import User, ROLE_USER, ROLE_ADMIN, ROLE_LANDLORD, TYPE_ELECTRICITY, TYPE_ELECTRICITY_INST, TYPE_HEAT, TYPE_WATER, Property, Prices, Room, Feed, Datastream, Contract, Room_Datastream, getUnit
+from forms import LoginForm, EditForm, EditUserForm, EditPropertyForm, AddPropertyForm, UpdatePricesForm, EditPricesForm, AddRoomForm, EditRoomForm, AddFeedForm, AddDatastreamForm, AddUserContractForm, AddRoomContractForm, AddConnectionRoomDatastreamForm, AddConnectionDatastreamRoomForm, RequestPropertyForm, FeedbackForm
+from models import User, ROLE_USER, ROLE_ADMIN, ROLE_LANDLORD, TYPE_ELECTRICITY, TYPE_ELECTRICITY_INST, TYPE_HEAT, TYPE_WATER, Property, Prices, Room, Feed, Datastream, Contract, Room_Datastream, getUnit, Feedback
 from datetime import datetime, date
 from xively import get_datastreams, get_dataset
 from contract import get_usage_per_month, Month, Usage, get_last_week as get_last_week_values, get_last_month as get_last_month_values, get_last_year as get_last_year_values
@@ -1142,3 +1142,24 @@ def delete_room_datastream(id):
     db.session.commit()
     flash('Connection deleted')
     return redirect('index')
+
+@app.route('/read_feedback')
+@login_required
+@admin_required
+def read_feedback():
+    feedback = Feedback.query.order_by(Feedback.timestamp.desc())
+    return render_template('read_feedback.html',
+        feedback = feedback)
+
+@app.route('/send_feedback', methods=['GET', 'POST'])
+@login_required
+def send_feedback():
+    form = FeedbackForm()
+    if form.validate_on_submit():
+        newFeedback = Feedback(sender=g.user,text=form.text.data, timestamp=datetime.utcnow())
+        db.session.add(newFeedback)
+        db.session.commit()
+        flash('Your feedback has been submitted! Thank you!')
+        return redirect(url_for('index'))
+    return render_template('send_feedback.html',
+        form = form)

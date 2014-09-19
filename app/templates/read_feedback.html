@@ -1,0 +1,14 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+    {% include 'flash.html' %}
+    <h1>Feedback</h1>
+    {% for entry in feedback %}
+    <div class="well">
+    	<h4>Submitted by: <a href="{{url_for('user',nickname=entry.sender.nickname)}}">{{entry.sender.nickname}}</a></h4>
+    	<p><em>{{entry.timestamp}}</em></p>
+        <p>{{entry.text}}</p>
+    </div>
+    {% endfor %}
+{% endblock %}
