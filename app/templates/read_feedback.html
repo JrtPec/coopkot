@@ -5,10 +5,12 @@
     {% include 'flash.html' %}
     <h1>Feedback</h1>
     {% for entry in feedback %}
-    <div class="well">
+    <div class="well" style="background-color:{%if entry.is_read()%}#e4f2d9{%else%}#fbd8d6{%endif%}">
     	<h4>Submitted by: <a href="{{url_for('user',nickname=entry.sender.nickname)}}">{{entry.sender.nickname}}</a></h4>
     	<p><em>{{entry.timestamp}}</em></p>
         <p>{{entry.text}}</p>
+        <p><a href="{{url_for('check_feedback',id=entry.id)}}"><i class="icon-check"></i></a> | <a href="{{url_for('delete_feedback',id=entry.id)}}"><i class="icon-trash"></i></a></p>
+        
     </div>
     {% endfor %}
 {% endblock %}

@@ -1151,6 +1151,36 @@ def read_feedback():
     return render_template('read_feedback.html',
         feedback = feedback)
 
+@app.route('/check_feedback/<id>')
+@login_required
+@admin_required
+def check_feedback(id):
+    feedback = Feedback.query.get(id)
+    if feedback == None:
+        flash('Feedback not found')
+        abort(404)
+    if feedback.is_read():
+        feedback.read = 0
+    else:
+        feedback.read = 1
+    db.session.add(feedback)
+    db.session.commit()
+    flash('change saved')
+    return redirect(url_for('read_feedback'))
+
+@app.route('/delete_feedback/<id>')
+@login_required
+@admin_required
+def delete_feedback(id):
+    feedback = Feedback.query.get(id)
+    if feedback == None:
+        flash('Feedback not found')
+        abort(404)
+    db.session.delete(feedback)
+    db.session.commit()
+    flash('Feedback deleted')
+    return redirect(url_for('read_feedback'))
+
 @app.route('/send_feedback', methods=['GET', 'POST'])
 @login_required
 def send_feedback():

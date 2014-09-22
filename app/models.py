@@ -261,3 +261,9 @@ class Feedback(db.Model):
     text = db.Column(db.String(500), default='')
     timestamp = db.Column(db.DateTime)
     read = db.Column(db.SmallInteger, default=0)
+
+    def is_read(self):
+        if self.read == 0:
+            return False
+        else:
+            return True
