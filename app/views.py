@@ -701,6 +701,7 @@ def datastream(id):
     datastreams = []
     datastreams.append(datastream)
     return render_template('datastream.html',
+        dataType = datastream.type,
         datastream = datastream,
         datastreams = datastreams,
         rooms = datastream.rooms,
