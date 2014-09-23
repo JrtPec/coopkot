@@ -171,7 +171,7 @@ def user(nickname):
     datastreams = user.get_datastream_type(dataType)
     return render_template('user.html',
         user = user,
-        contracts = contracts,
+        contracts = contracts.order_by(Contract.start_date.desc()),
         ref = 'user',
         datastreams = datastreams,
         dataType = dataType
@@ -256,7 +256,7 @@ def delete_user(id):
 @login_required
 #@admin_required
 def users():
-    users = User.query.all()
+    users = User.query.order_by(User.nickname)
     return render_template('users.html',
         users = users)
 
@@ -264,7 +264,7 @@ def users():
 @login_required
 @admin_required
 def properties():
-    properties = Property.query.all()
+    properties = Property.query.order_by(Property.name)
     if properties == None:
         flash('No properties found.')
     return render_template('properties.html',
@@ -285,7 +285,6 @@ def property(id):
         if g.user.property_id != property.id:
             abort(401)
 
-    contracts = property.get_contracts()
     if request.method == "POST":
         dataType = int(request.form.get('dataType'))
     else:
@@ -294,10 +293,9 @@ def property(id):
     return render_template('property.html',
         property = property,
         prices = property.get_current_prices(),
-        rooms = property.rooms,
-        feeds = property.feeds,
-        contracts = contracts,
-        users = property.users,
+        rooms = property.rooms.order_by(Room.name),
+        feeds = property.feeds.order_by(Feed.xively_id),
+        users = property.users.order_by(User.nickname),
         datastreams = datastreams,
         dataType = dataType
         )

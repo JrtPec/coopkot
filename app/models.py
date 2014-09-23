@@ -80,7 +80,7 @@ class User(db.Model):
         if c == None:
             return None
         if c.is_current():
-            return c.room.datastreams.filter(Datastream.type == dataType)
+            return c.room.datastreams.filter(Datastream.type == dataType).order_by(Datastream.info)
         else:
             return None
 
@@ -154,7 +154,7 @@ class Property(db.Model):
         return Datastream.query.join(Feed).filter(Feed.property_id == self.id)
 
     def get_datastream_type(self,dataType):
-        return Datastream.query.join(Feed).filter(Feed.property_id==self.id,Datastream.feed_id==Feed.id,Datastream.type==dataType)
+        return Datastream.query.join(Feed).filter(Feed.property_id==self.id,Datastream.feed_id==Feed.id,Datastream.type==dataType).order_by(Datastream.info)
 
     def __repr__(self):
         return '<Property %r>' % (self.name)
