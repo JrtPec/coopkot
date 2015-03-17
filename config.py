@@ -24,13 +24,13 @@ MAIL_SERVER = 'smtp.gmail.com' # your mailserver
 MAIL_PORT = 465
 MAIL_USE_TLS = False
 MAIL_USE_SSL = True
-MAIL_USERNAME = 'janpecinovsky'
-MAIL_PASSWORD = 'G1snrfpfilAE'
+MAIL_USERNAME = '***'
+MAIL_PASSWORD = '***'
 
 # administrator list
-ADMINS = ['janpecinovsky+admin@gmail.com']
+ADMINS = ['****']
 
-ADMIN_NAMES = ['Jan Pecinovsky']
+ADMIN_NAMES = ['***']
 # pagination
 POSTS_PER_PAGE = 50
 MAX_SEARCH_RESULTS = 50
